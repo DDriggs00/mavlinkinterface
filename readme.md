@@ -1,6 +1,5 @@
 # Catfish API
 
-
 ## Features
 
 * Python!
@@ -12,15 +11,21 @@
 * Movement Commands can detect blockage
 * All sensor info accessible individually or aggregately
 
+## Architecture
+* Written using Python 3.7 latest
+* Dependencies
+    * [pymavlink](https://github.com/ArduPilot/pymavlink)
 
 # Active Calls
+
 ## rotate( degrees )
-Relative: Rotates the submarine in place by _degrees_  degrees  
-Absolute: Rotates the submarine to face in the direction _degrees_ degrees
+Relative: Rotates the submarine in place by *degrees*  degrees  
+Absolute: Rotates the submarine to face in the direction *degrees* degrees
 
 ### Arguments:
-degrees (integer):  
-An integer for how many degrees to rotate. In absolute mode, this is limited to between 0 and 360.
+degrees (integer)
+: An integer for how many degrees to rotate
+: In absolute mode, this is limited to between 0 and 360.
 
 ### Return Values
 Returns a string.  
@@ -39,17 +44,18 @@ rotate(degrees = -15, absolute)
 # Result: The submarine rotates the shortest distance to face 15 degrees to the left of magnetic north
 ```
 ## move( direction, time, throttle \<optional> )
-Move the submarine _direction_ at _throttle_ percent power for _time_ seconds
+Move the submarine *direction* at *throttle* percent power for *time* seconds
 
 ### Arguments:
 direction (integer):  
-An integer indicating the direction in degrees the submarine will be moving.
+: An integer indicating the direction in degrees the submarine will be moving.
 
 time (float):  
-An real number representing the time in seconds between activation and deactivation of the propellers
+: An real number representing the time in seconds between activation and deactivation of the propellers
 
 throttle (integer, optional):  
-An integer from 1 to 100 representing the percentage of propeller power to use. Defaults to 100
+: An integer from 1 to 100 representing the percentage of propeller power to use.
+: Defaults to 100
 
 ### Return Values:
 Returns a string.  
@@ -69,11 +75,13 @@ This call is used to change the depth of the submarine. It returns true upon suc
 
 ### Arguments:
 depth (float):  
-The distance to dive in feet. In relative mode, negative numbers can be used to rise.
+: The distance to dive in feet.
+: In relative mode, negative numbers can be used to rise.
 
 ### Return Values  
 Returns a string.  
-If the action succeeded, returns "Success,  _new\_Height_
+If the action succeeded, returns "Success,  *new\_depth*"  
+If the action failed, returns teh reason for failure and the new depth
 
 ### Examples:
 ```py
@@ -100,20 +108,21 @@ surface
 # The submarine ascends to the surface
 ```
 ## armGrab( strength \<optional>, percent \<optional> )
-Close the grabber arm by _percent_% or until gripping an object with _strength_% strength
+Close the grabber arm by *percent*% or until gripping an object with *strength*% strength
 
 ### Arguments
 strength (integer, optional):  
-An integer from 1 to 100 representing the percentage of motor strength to use in gripping. Defaults to 100%
+: An integer from 1 to 100 representing the percentage of motor strength to use in gripping.
+: Defaults to 100%
 
 percent (integer, optional):  
-An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
+: An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
 
 ### Return Values
 Returns a string.  
 Upon success, returns "Success"  
 Upon failure, returns the reason for failure  
-Note: If arm is overheating, no action will be taken and function will return "Overheating".
+Note: If arm is overheating, or would overheat following the next action, no action will be taken and function will return "Overheating, No Action Taken".
 
 ### Examples
 ```py
@@ -127,22 +136,22 @@ armGrab(strength = 100, percent = 50)
 # The grabber arm closes by 50% or until closed or gripping an object with full strength
 ```
 ## armRelease( percent \<optional> )
-Open the grabber arm by _percent_%
+Open the grabber arm by *percent*%
 
 ### Arguments
 percent (integer, optional):  
-An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
+: An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
 
 ### Return Values
 Returns a string.  
 Upon success, returns "Success"  
 Upon failure, returns the reason for failure  
-Note: If arm is overheating, no action will be taken and function will return "Overheating".
+Note: If arm is overheating, or would overheat following the next action, no action will be taken and function will return "Overheating, No Action Taken".
 
 ### Examples
 ```py
 armRelease
-# The grabber arm opens comletely
+# The grabber arm opens completely
 
 armRelease(10)
 # The grabber arm opens by 10%
@@ -152,12 +161,12 @@ Sets the lights to a specific brightness
 
 ### Arguments
 brightness (integer):  
-An integer from 0 to 100, representing the percent brightness of the lights.
+: An integer from 0 to 100, representing the percent brightness of the lights.
 
 ### Return Values:
 Returns a string.  
 Upon success, returns "Success"  
-Upon Failure, returns theaa reason for failure.
+Upon Failure, returns the reason for failure.
 
 ### Examples
 ```py
@@ -175,10 +184,12 @@ Tilts the camera by the angle specified. Range is +/- 90 degrees.
 
 ### Arguments
 angle (integer):  
-An integer from -180 to 180 (-90 to 90 in Absolute mode) representing the number of degrees to tilt the camera, with up being positive.  In absolute mode, 0 is directly forward.
+: An integer from -180 to 180 (-90 to 90 in Absolute mode) representing the number of degrees to tilt the camera, with up being positive.
+: In absolute mode, 0 is directly forward.
 
 speed (integer, optional):  
-An integer from 1 to 100 representing the percentage of total velocity to use when rotating the camera. Useful for panning when taking video. Default is 100.
+: An integer from 1 to 100 representing the percentage of total velocity to use when rotating the camera. Useful for panning when taking video.
+: Default is 100.
 
 ### Return Values
 Returns a string.  
@@ -197,7 +208,46 @@ cameraTilt(angle = 0, absolute)
 # Positions the camera to point straight forward, Returns True
 ```
 ## arm()
+Enables the propellors if the pre-arm safety checks pass. 
+
+### Return Values
+Returns a string.  
+Upon success or failure, returns the success/fail status, and each of the pre-arm safety checks, their pass/fail status, and their return values
+
+### Example
+arm command is run and fails, output:
+```json
+{
+    "state":"Success",
+    "checks": {
+        "check1": {
+            "state":"Pass",
+            "output": 1234
+        },
+        "check2": {
+            "state":"Fail",
+            "output": 1234
+        },
+        "check3": {
+            "state":"Pass",
+            "output": "check 3 return value"
+        }
+    }
+}
+```
 ## disarm()
+Disables the propellors
+
+### Return Values
+Returns a string.  
+Upon success, returns "Success"  
+Upon Failure, Returns the reason for failure
+
+### Examples
+```py
+disarm
+# The propellors disable, returns "Success"
+```
 ## Universal Arguments
 
 ### BlockMode (enum)  
@@ -208,7 +258,7 @@ This argument prevents all other active calls until the paired command has been 
 * When this argument is not present, it will be treated as None (configurable)
 
 ### Override (switch)
-When present, this argument causes any currently executing or queued commands to stop, and this command will to executed immidiately. Primarily designed for emergency surfacing.
+When present, this argument causes any currently executing or queued commands to stop, and this command will to executed immediately.  This can also be used to force an arming of the propellors.
 
 ### Absolute (switch)
 This argument causes movement commands to use absolute coordinates and directions, rather than coordinates and directions relative to the submarine.
@@ -217,42 +267,123 @@ This argument causes movement commands to use absolute coordinates and direction
 Note: This argument is only relevant where a direction, depth, or coordinates are present
 
 # Passive Calls
+## cameraStartFeed()
+Creates a camera feed that the controller can access.
 
-## cameraVideoStart( resolution \<optional> )
-Starts the camera recording video. The video will end when either the cameraVideoStop is called or
-
-### Arguments
-arg (type):  
-description
+### Return Values
+Returns a string.  
+Upon Success, returns all information neccesary to access the video stream.  
+Upon failure, returns the reason for failure.
 
 ### Examples
 ```py
+cameraStartFeed
+# The camera feed is enabled and the following JSON returned
+```
+```json
+{
+    "state":"Success",
+    "ip":"Stream IP",
+    "port":"Stream Port"
+    ...
+}
+```
+## cameraVideoStart( time \<optional>, resolution \<optional> )
+Starts the camera recording video. The video will end when either the cameraVideoStop is called, the optional timer ends, or the internal storage runs out.
 
+### Arguments
+time (integer, optional):  
+: The number of seconds to record video before automatically ending
+
+resolution (string, optional):  
+: Used to reduce the resolution the camera is recording at. Default is 1080p (camera max)
+
+### Return Values
+Returns a JSON-formatted string string.  
+Upon success, returns the local path of the video.  
+Upon failure, returns the reason for failure.
+
+### Examples
+```py
+cameraVideoStart
+# Starts the video feed to record until stopped at 1080p, returns the following JSON
+```
+```json
+{
+    "state":"Success",
+    "path":"/.../video/2019-05-22T08.48.34.mp4"
+}
+```
+```py
+cameraVideoStart(time = 3600, resolution = '720p') 
+# Starts the video feed to record for up to 1 hour at 720p, but fails due to a lack of storage space and returns the following JSON
+```
+```json
+{
+    "state":"Failure",
+    "failReason":"Lack of storage space"
+}
 ```
 ## cameraVideoStop()
+Ends the current video if recording is active
 
-## takePhoto
+### Return Values
+Returns a string.  
+Upon Success, Returns "Success"  
+Upon Failure, returns failure reason
+
+### Examples
+```py
+cameraVideoStop # Assuming video is recording
+# The currently recording video ends and the video file is finalized, and returns "Success"
+cameraVideoStop # Assuming video is not recording
+# The currently recording video ends and the video file is finalized, and function returns "Failed, No video to stop"
+```
+## cameraPhoto( resolution \<optional>, zoom \<optional>, )
 Takes a photo using the camera and returns its path.
 
 ### Arguments
-// Advanced args go here
+resolution (string, optional):  
+: Used to reduce the resolution the camera is recording at. Default is 1080p (camera max)
+
+### Return Values
+Returns a JSON-formatted string string.  
+Upon success, returns the local path of the image.  
+Upon failure, returns the reason for failure.
 
 ### Examples
 ```py
-
+cameraPhoto
+# Captures a 1080p photo, and returns the following JSON
 ```
-## getSonarMap
-## getAllSensorData
-## getAllPassiveSensorData
+```json
+{
+    "state":"Success",
+    "path":"/.../images/2019-05-22T08.48.34.jpg"
+}
+```
+```py
+cameraPhoto(resolution = '720p') 
+# takes a 720p photo, but fails due to a lack of storage space and returns the following JSON
+```
+```json
+{
+    "state":"Failure",
+    "failReason":"Lack of storage space"
+}
+```
+## getLeakData()
 ## getDepth()
 ## getPressure()
 ## getInternalPressure()
 ## GetTemperature()
+## getBearing()
 ## getAccelerometerData()
 ## getGyroscopeData()
-## getBearing()
-## getLeakData()
 ## GetBatteryData()
+## getSonarMap
+## getAllSensorData
+## getAllPassiveSensorData
 
 # Configuration Calls
 
