@@ -75,7 +75,7 @@ This call is used to change the depth of the submarine. It returns true upon suc
 
 ### Arguments:
 depth (float):  
-: The distance to dive in feet.
+: The distance to dive in meters.
 : In relative mode, negative numbers can be used to rise.
 
 ### Return Values  
@@ -86,13 +86,13 @@ If the action failed, returns teh reason for failure and the new depth
 ### Examples:
 ```py
 dive(depth = 10)
-# The submarine descends by 10 feet or until it is obstructed
+# The submarine descends by 10 meters or until it is obstructed
 
 dive(depth = -10)
-# The submarine ascends by 10 feet or until it surfaces or is obstructed
+# The submarine ascends by 10 meters or until it surfaces or is obstructed
 
 dive(depth = 5, absolute)
-# The submarine moves to a depth of 5 feet below the surface or until it is obstructed
+# The submarine moves to a depth of 5 meters below the surface or until it is obstructed
 ```
 ## surface()
 This call brings the submarine to the surface. It returns True upon success and False upon obstruction.
@@ -369,15 +369,88 @@ cameraPhoto(resolution = '720p')
 ```json
 {
     "state":"Failure",
+    "path":null,
     "failReason":"Lack of storage space"
 }
 ```
 ## getLeakData()
+Reads the data from the leak sensors
+
+### Return Data
+Returns a string.  
+Returns a JSON string containing data from all 
+
+### Examples
+getLeakData is called and returns the following JSON
+```json
+{
+    "leakSensor1": 0,
+    "leakSensor2": 0,
+    "leakSensor3": 0,
+    "leakSensor4": 0
+}
+```
 ## getDepth()
-## getPressure()
-## getInternalPressure()
+
+### Return values
+Returns a float
+Returns the depth of the submarine in meters down from the surface
+
+### Examples
+```py
+getDepth # Assuming the submarine is surfaced
+# returns 0
+
+getdepth # Assuming the submarine is 5 meters below the surface
+# returns 5
+```
+## getPressureExternal()
+
+### Return values
+Returns a float.  
+Returns the external pressure on the submarine in kiloPascals
+
+### Examples
+```py
+getPressureExternal # assuming external pressure of 155.32
+# returns 155.32
+```
+## getPressureInternal()
+
+### Return values
+Returns a float.  
+Returns the internal pressure on the submarine in kiloPascals
+
+### Examples
+```py
+getPressureInternal # Assuming internal pressure of 101.325 kpa
+# returns 101.325
+```
 ## GetTemperature()
+
+### Return Values
+Returns a float.  
+Returns the temperature read by the temperature sensor in degrees Celcius
+
+### Examples
+```py
+getTemperature # assuming water temperature of 26.3
+# returns 26.3
+```
 ## getBearing()
+
+### Return Values
+Returns a float.  
+returns the bearing of the submarine in degrees.
+
+### Examples
+```py
+getBearing # assuming the submarine is facing due north
+# returns 0
+
+getBearing # assuming the submarine is facing due east
+# returns 90
+```
 ## getAccelerometerData()
 ## getGyroscopeData()
 ## GetBatteryData()
