@@ -3,7 +3,7 @@ reads the data from the external temperature sensor
 
 ## Return Values
 Returns a float.  
-Returns the temperature read by the temperature sensor in degrees Celcius
+Returns the temperature read by the temperature sensor in degrees Celsius
 
 ## Examples
 ```py

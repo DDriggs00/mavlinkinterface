@@ -1,5 +1,5 @@
 # disarm()
-Disables the propellors
+Disables the propellers
 
 ## Return Values
 Returns a string.  
@@ -9,7 +9,7 @@ Upon Failure, Returns the reason for failure
 ## Examples
 ```py
 disarm
-# The propellors disable, returns "Success"
+# The propellers disable, returns "Success"
 ```
 ## Related Mavlink Functions
 

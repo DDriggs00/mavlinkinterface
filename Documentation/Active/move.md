@@ -1,16 +1,16 @@
 # move( direction, time, throttle \<optional> )
 Move the submarine *direction* at *throttle* percent power for *time* seconds
 
-## Arguments:
+## Parameters:
 direction (integer):  
-: An integer indicating the direction in degrees the submarine will be moving.
+> An integer indicating the direction in degrees the submarine will be moving.
 
 time (float):  
-: An real number representing the time in seconds between activation and deactivation of the propellers
+> An real number representing the time in seconds between activation and deactivation of the propellers
 
 throttle (integer, optional):  
-: An integer from 1 to 100 representing the percentage of propeller power to use.
-: Defaults to 100
+> An integer from 1 to 100 representing the percentage of propeller power to use.
+> Defaults to 100
 
 ## Return Values:
 Returns a string.  

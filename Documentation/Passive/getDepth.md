@@ -10,6 +10,6 @@ Returns the depth of the submarine in meters down from the surface
 getDepth # Assuming the submarine is surfaced
 # returns 0
 
-getdepth # Assuming the submarine is 5.4 meters below the surface
+getDepth # Assuming the submarine is 5.4 meters below the surface
 # returns 5.4
 ```

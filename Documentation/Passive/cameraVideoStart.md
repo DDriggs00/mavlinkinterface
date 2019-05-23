@@ -1,12 +1,13 @@
 # cameraVideoStart( time \<optional>, resolution \<optional> )
 Starts the camera recording video. The video will end when either the cameraVideoStop is called, the optional timer ends, or the internal storage runs out.
 
-## Arguments
+## Parameters
 time (integer, optional):  
-: The number of seconds to record video before automatically ending
+> The number of seconds to record video before automatically ending
 
 resolution (string, optional):  
-: Used to reduce the resolution the camera is recording at. Default is 1080p (camera max)
+> Used to reduce the resolution the camera is recording at.  
+> Default is 1080p (camera max)
 
 ## Return Values
 Returns a JSON-formatted string string.  

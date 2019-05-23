@@ -1,9 +1,9 @@
 # armRelease( percent \<optional> )
 Open the grabber arm by *percent*%
 
-## Arguments
+## Parameters
 percent (integer, optional):  
-: An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
+> An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
 
 ## Return Values
 Returns a string.  

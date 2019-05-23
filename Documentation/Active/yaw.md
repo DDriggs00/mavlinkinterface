@@ -2,10 +2,10 @@
 Relative: yaws the submarine in place by *degrees*  degrees  
 Absolute: yaws the submarine to face in the direction *degrees* degrees
 
-## Arguments:
+## Parameters:
 degrees (integer)
-: An integer for how many degrees to rotate
-: In absolute mode, this is limited to between 0 and 360.
+> An integer for how many degrees to rotate
+> In absolute mode, this is limited to between 0 and 360.
 
 ## Return Values
 Returns a string.  

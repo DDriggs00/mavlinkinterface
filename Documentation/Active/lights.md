@@ -1,9 +1,9 @@
 # lights( brightness )
 Sets the lights to a specific brightness
 
-## Arguments
+## Parameters
 brightness (integer):  
-: An integer from 0 to 100, representing the percent brightness of the lights.
+> An integer from 0 to 100, representing the percent brightness of the lights.
 
 ## Return Values:
 Returns a string.  

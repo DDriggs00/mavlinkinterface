@@ -1,14 +1,14 @@
 # cameraTilt( angle, speed <optional> )
 Tilts the camera by the angle specified. Range is +/- 90 degrees.
 
-## Arguments
+## Parameters
 angle (integer):  
-: An integer from -180 to 180 (-90 to 90 in Absolute mode) representing the number of degrees to tilt the camera, with up being positive.
-: In absolute mode, 0 is directly forward.
+> An integer from -180 to 180 (-90 to 90 in Absolute mode) representing the number of degrees to tilt the camera, with up being positive.  
+> In absolute mode, 0 is directly forward.
 
 speed (integer, optional):  
-: An integer from 1 to 100 representing the percentage of total velocity to use when rotating the camera. Useful for panning when taking video.
-: Default is 100.
+> An integer from 1 to 100 representing the percentage of total velocity to use when rotating the camera. Useful for panning when taking video.  
+> Default is 100.
 
 ## Return Values
 Returns a string.  

@@ -1,15 +1,15 @@
 # dive( depth )
 This call is used to change the depth of the submarine. It returns true upon success, and false upon obstruction or surfacing
 
-## Arguments:
+## Parameters:
 depth (float):  
-: The distance to dive in meters.
-: In relative mode, negative numbers can be used to rise.
+> The distance to dive in meters.  
+> In relative mode, negative numbers can be used to rise.
 
 ## Return Values  
 Returns a string.  
 If the action succeeded, returns "Success,  *new\_depth*"  
-If the action failed, returns teh reason for failure and the new depth
+If the action failed, returns the reason for failure and the new depth
 
 ## Examples:
 ```py

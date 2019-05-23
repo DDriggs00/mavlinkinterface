@@ -1,13 +1,13 @@
 # armGrab( strength \<optional>, percent \<optional> )
 Close the grabber arm by *percent*% or until gripping an object with *strength*% strength
 
-## Arguments
+## Parameters
 strength (integer, optional):  
-: An integer from 1 to 100 representing the percentage of motor strength to use in gripping.
-: Defaults to 100%
+> An integer from 1 to 100 representing the percentage of motor strength to use in gripping.  
+> Defaults to 100%
 
 percent (integer, optional):  
-: An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
+> An integer from 1 to 100 representing the amount, as a percentage of the whole distance, the arm should close
 
 ## Return Values
 Returns a string.  

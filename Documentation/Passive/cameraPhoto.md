@@ -1,10 +1,10 @@
 # cameraPhoto( resolution \<optional>, zoom \<optional>, )
 Takes a photo using the camera and returns its path.
 
-## Arguments
+## Parameters
 resolution (string, optional):  
-: Used to reduce the resolution the camera is recording at.
-: Default is 1080p (camera max)
+> Used to reduce the resolution the camera is recording at.  
+> Default is 1080p (camera max)
 
 ## Return Values
 Returns a JSON-formatted string string.  

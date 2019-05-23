@@ -1,5 +1,5 @@
 # arm()
-Enables the propellors if the pre-arm safety checks pass. 
+Enables the propellers if the pre-arm safety checks pass. 
 
 ## Return Values
 Returns a string.  
