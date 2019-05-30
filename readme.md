@@ -64,11 +64,6 @@ TODO:
 - [setRecordingInterval( interval )](docs/Configuration/setRecordingInterval.md)
 - [setDefaultQueueMode( mode )](docs/Configuration/setDefaultQueueMode.md)
 
-TODO:
-
-
-
-
 ## Universal Parameters
 
 ### QueueMode (enum)  
