@@ -1,4 +1,4 @@
-# lights( brightness )
+# setLights( brightness )
 Sets the lights to a specific brightness
 
 ## Parameters
@@ -12,12 +12,12 @@ Upon Failure, returns the reason for failure.
 
 ## Examples
 ```py
-lights(0)
+setLights(0)
 # Turns the lights off
 
-lights(65)
+setLights(65)
 # sets the lights to 65% brightness
 
-lights(100)
+setLights(100)
 # sets the lights to full brightness
 ```
