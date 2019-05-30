@@ -26,74 +26,46 @@ heartbeat
 ## Active functions
 add pitch, roll, setThrust, setAltitudeTarget
 
-- [yaw( degrees )](docs/Active/yaw.md)
-- [move( direction, time, throttle \<optional> )](docs/Active/move.md)
-- [dive( depth )](docs/Active/dive.md)
-- [surface()](docs/Active/surface.md)
+- [arm()](docs/Active/arm.md)
 - [armGrab( strength \<optional>, percent \<optional> )](docs/Active/armGrab.md)
 - [armRelease( percent \<optional> )](docs/Active/armRelease.md)
-- [lights( brightness )](docs/Active/lights.md)
 - [cameraTilt( angle, speed <optional> )](docs/Active/cameraTilt.md)
-- [arm()](docs/Active/arm.md)
 - [disarm()](docs/Active/disarm.md)
+- [dive( depth )](docs/Active/dive.md)
+- [move( direction, time, throttle \<optional> )](docs/Active/move.md)
+- [setLights( brightness )](docs/Active/setLights.md)
+- [surface()](docs/Active/surface.md)
+- [yaw( degrees )](docs/Active/yaw.md)
 
 ## Passive functions
 - [cameraStartFeed()](docs/Passive/cameraStartFeed.md)
 - [cameraVideoStart( time \<optional>, resolution \<optional> )](docs/Passive/cameraVideoStart.md)
 - [cameraVideoStop()](docs/Passive/cameraVideoStop.md)
 - [cameraPhoto( resolution \<optional>, zoom \<optional>, )](docs/Passive/cameraPhoto.md)
-- [getLeakData()](docs/Passive/getLeakData.md)
+- [getAccelerometerData()](docs/Passive/getAccelerometerData.md)
+- [getBatteryData()](docs/Passive/getBatteryData.md)
+- [getBearing()](docs/Passive/getBearing.md)
 - [getDepth()](docs/Passive/getDepth.md)
+- [getGyroscopeData()](docs/Passive/getGyroscopeData.md)
+- [getLeakData()](docs/Passive/getLeakData.md)
+- [getMagnetometerData()](docs/Passive/getMagnetometerData.md)
 - [getPressureExternal()](docs/Passive/getPressureExternal.md)
 - [getPressureInternal()](docs/Passive/getPressureInternal.md)
 - [getTemperature()](docs/Passive/getTemperature.md)
-- [getBearing()](docs/Passive/getBearing.md)
-- [getBatteryData()](docs/Passive/getBatteryData.md)
-- [getMagnetometerData()](docs/Passive/getMagnetometerData.md)
-- [getAccelerometerData()](docs/Passive/getAccelerometerData.md)
-- [getGyroscopeData()](docs/Passive/getGyroscopeData.md)
+- [getAllSensorData()](docs/Passive/getAllSensorData.md)
 
 TODO:
 
 - getSonarMap()
-# getAllSensorData()
-Returns data from all sensors
-
-## Return Values
-Returns a JSON-formatted string.  
-Returns all data from every currently-attached sensor
-## Example Output
-
-
-- getAllPassiveSensorData()
 
 ## Configuration functions
 
 - [setLoggingLevel( sensor, level )](docs/Configuration/setLoggingLevel.md)
 - [setRecordingInterval( interval )](docs/Configuration/setRecordingInterval.md)
+- [setDefaultQueueMode( mode )](docs/Configuration/setDefaultQueueMode.md)
 
 TODO:
-# setDefaultQueueMode( mode )
-Sets the queuing mode to use when the universal parameter queueMode is not given.
-The possible modes are as follows:
 
-Queue mode:
-> If a movement command is currently executing and a new move command is initiated, the new move command will be placed in a queue, which will be executed immediately following the existing command.
-
-Override mode:
-> If a movement command is currently executing and a new move command is initiated, the currently executing movement command will be halted and discarded, and the new command will be executed immediately. The *Override* causes any command to behave as though this mode were active.
-
-Ignore mode:
-> If a movement command is currently executing and a new move command is initiated, the new move command will be ignored.
-
-The default default mode is override
-
-## Parameters
-Mode (enum):  
-> The queuing mode to use by default. Possible values are:  
-> queue  
-> override  
-> ignore
 
 
 
