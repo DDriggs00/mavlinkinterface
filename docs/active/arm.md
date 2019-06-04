@@ -1,12 +1,16 @@
 # arm()
-Enables the propellers if the pre-arm safety checks pass. 
+
+Enables the propellers if the pre-arm safety checks pass.
 
 ## Return Values
+
 Returns a string.  
 Upon success or failure, returns the success/fail status, and each of the pre-arm safety checks, their pass/fail status, and their return values
 
 ## Example
+
 arm command is run and fails, output:
+
 ```json
 {
     "state":"Success",
@@ -21,7 +25,7 @@ arm command is run and fails, output:
         },
         "check3": {
             "state":"Pass",
-            "output": false
+            "output": "output"
         }
     }
 }

@@ -1,11 +1,14 @@
 # getAccelerometerData()
+
 Reads the accelerometer and returns the output in units of meters per second squared (m/s^2)
 
 ## Return Values
+
 Returns a JSON-formatted string.  
 The output will data taken directly from the accelerometer.
 
 ## Example output
+
 ```json
 {
     "X":1.25,

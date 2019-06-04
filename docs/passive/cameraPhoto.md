@@ -1,31 +1,38 @@
 # cameraPhoto( resolution \<optional>, zoom \<optional>, )
+
 Takes a photo using the camera and returns its path.
 
 ## Parameters
+
 resolution (string, optional):  
 > Used to reduce the resolution the camera is recording at.  
 > Default is 1080p (camera max)
 
 ## Return Values
+
 Returns a JSON-formatted string string.  
 Upon success, returns the local path of the image.  
 Upon failure, returns the reason for failure.
 
 ## Examples
+
 ```py
 cameraPhoto
 # Captures a 1080p photo, and returns the following JSON
 ```
+
 ```json
 {
     "state":"Success",
     "path":"/.../images/2019-05-22T08.48.34.jpg"
 }
 ```
+
 ```py
-cameraPhoto(resolution = '720p') 
+cameraPhoto(resolution = '720p')
 # takes a 720p photo, but fails due to a lack of storage space and returns the following JSON
 ```
+
 ```json
 {
     "state":"Failure",

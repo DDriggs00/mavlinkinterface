@@ -1,4 +1,5 @@
 # setDefaultQueueMode( mode )
+
 Sets the queuing mode to use when the universal parameter queueMode is not given.
 The possible modes are as follows:
 
@@ -14,6 +15,7 @@ Ignore mode:
 The initial setting is Override
 
 ## Parameters
+
 Mode (enum):  
 > The queuing mode to use by default. Possible values are:  
 > `queue`  
@@ -21,9 +23,11 @@ Mode (enum):
 > `ignore`
 
 ## Return Values
+
 Returns void
 
 ## Examples
+
 ```py
 setDefaultQueueMode(Mode = queue)
 setDefaultQueueMode(Mode = override)

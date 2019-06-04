@@ -1,10 +1,14 @@
 # getAllSensorData()
+
 Returns data from all sensors
 
 ## Return Values
+
 Returns a JSON-formatted string.  
 Returns all data from every currently-attached sensor
+
 ## Example Output
+
 ```json
 {
     "accelerometer": {
@@ -27,7 +31,7 @@ Returns all data from every currently-attached sensor
     "leak": {
         "leakSensor1": 0,
         "leakSensor2": 0,
-        "leakSensor3": 1, 
+        "leakSensor3": 1,
         "leakSensor4": 0
     },
     "Magnetometer":{
