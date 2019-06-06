@@ -1,3 +1,5 @@
+from enum import Enum
+
 class queueModes(Enum):
     queue = 0
     override = 1
