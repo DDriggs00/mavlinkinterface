@@ -6,7 +6,7 @@ This call is used to change the depth of the submarine. It returns true upon suc
 
 depth (float):  
 > The distance to dive in meters.  
-> In relative mode, negative numbers can be used to rise.
+> Negative numbers indicate an increase in depth.
 
 ## Return Values
 
@@ -17,10 +17,10 @@ If the action failed, returns the reason for failure and the new depth
 ## Examples
 
 ```py
-dive(depth = 10)
+dive(depth = -10)
 # The submarine descends by 10 meters or until it is obstructed
 
-dive(depth = -10)
+dive(depth = 10)
 # The submarine ascends by 10 meters or until it surfaces or is obstructed
 
 dive(depth = 5, absolute)
