@@ -1,9 +1,9 @@
 
 # Import main function
-# from mavlinkinterface.main import mavlinkInterface
-from .main import *
-# Import enums
-# from mavlinkinterface.main import MLIQueueModes
-# from mavlinkinterface.main import MLFlightModes
+from mavlinkinterface.main import *
 
-__all__ = ["mavlinkInterface", "MLIQueueModes"]
+# Import enums
+from mavlinkinterface.enum.flightModes import flightModes
+from mavlinkinterface.enum.queueModes import queueModes
+
+__all__ = ["mavlinkInterface", "flightModes", "queueModes"]
