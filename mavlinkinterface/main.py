@@ -100,8 +100,28 @@ class mavlinkInterface(object):
         if not self.__getSemaphore(override):
             return
 
-        logging.info("Diving at " + str(throttle) + "% throttle for " + str(time) + "seconds")
-        t = Thread(target=commands.active.move, args=(self.mavlinkConnection, self.sem, time, throttle,))
+        logging.info("Diving at " + str(throttle) + "% throttle for " + str(time) + " seconds")
+        t = Thread(target=commands.active.dive, args=(self.mavlinkConnection, self.sem, time, throttle,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
+    def yawAbsolute(self, angle, rate=20, direction=1, relative=0, override=False):
+        if not self.__getSemaphore(override):
+            return
+
+        logging.info("yawing in direction: " + str(direction) + " at " + str(rate) + " deg/s in " + str(relative) + " mode " + str(angle) + " degrees")
+        t = Thread(target=commands.active.yawAbsolute, args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
+    def changeAltitude(self, rate, altitude, override=False):
+        if not self.__getSemaphore(override):
+            return
+
+        logging.info("Moving to altitude " + str(altitude) + " at " + str(rate) + " m/s.")
+        t = Thread(target=commands.active.move, args=(self.mavlinkConnection, self.sem, rate, altitude,))
         t.start()
         if(not self.asynchronous):
             t.join()
@@ -116,13 +136,23 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             t.join()
 
+    def move3d(self, time, throttleX, throttleY, throttleZ, override=False):
+        if not self.__getSemaphore(override):
+            return
+
+        logging.info("Moving in direction x=" + str(throttleX) + " y=" + str(throttleY) + " z=" + str(throttleZ) + " for " + str(time) + "seconds")
+        t = Thread(target=commands.active.move3d, args=(self.mavlinkConnection, self.sem, time, throttleX, throttleY, throttleZ,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
     def setFlightMode(self, mode, override=False):
         if not self.__getSemaphore(override):
             return
 
         logging.info("Setting flight mode to " + str(mode))
         self.flightMode = mode
-        t = Thread(target=commands.active.setFlightMode, args=(self.sem, mode,))
+        t = Thread(target=commands.active.setFlightMode, args=(self.mavlinkConnection, self.sem, mode,))
         t.start()
         if(not self.asynchronous):
             t.join()
@@ -130,6 +160,17 @@ class mavlinkInterface(object):
     def getFlightMode(self):
         return self.flightMode
 
+    def arm(self):
+        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
+    def disarm(self):
+        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
 
 # class queueManager(Queue):
 #     def __init__(self, maxsize):
