@@ -103,6 +103,15 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# ignore pycache and .pyc
+.pyc
+__pycache__
+
 # Editor settings
 .vscode
+
+# Playground not needed
 testing.py
+
+# ignore logs
+.log
