@@ -1,11 +1,11 @@
 # Import interface
 import mavlinkinterface
 from pymavlink import mavutil
-exit()
+# exit()
 # Create interface object
 MLI = mavlinkinterface.mavlinkInterface()
 
-MLI.mavlinkConnection.arducopter_arm()
+MLI.arm()
 
 MLI.move("forward", 1, 100)
 

@@ -53,7 +53,7 @@ def lightsMax(ml, sem, rate, altitude):
             c_uint16(65535),  # chan6_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan7_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan8_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(1900),  # chan9_raw: uint16_t (uint16_t_MAX = ignore)
+            c_uint16(1900),   # chan9_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan10_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan11_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan12_raw: uint16_t (uint16_t_MAX = ignore)
@@ -80,7 +80,7 @@ def lightsoff(ml, sem, rate, altitude):
             c_uint16(65535),  # chan6_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan7_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan8_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(1900),  # chan9_raw: uint16_t (uint16_t_MAX = ignore)
+            c_uint16(1900),   # chan9_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan10_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan11_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan12_raw: uint16_t (uint16_t_MAX = ignore)
@@ -90,8 +90,6 @@ def lightsoff(ml, sem, rate, altitude):
             c_uint16(65535),  # chan16_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535),  # chan17_raw: uint16_t (uint16_t_MAX = ignore)
             c_uint16(65535))  # chan18_raw: uint16_t (uint16_t_MAX = ignore)
-    finally:
-        sem.release()
     finally:
         sem.release()
 
