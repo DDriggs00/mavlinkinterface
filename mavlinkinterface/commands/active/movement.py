@@ -129,5 +129,7 @@ def yaw(ml, sem, angle, rate=20, direction=1, relative=0):
             0,  # param5: Meaningless
             0,  # param6: Meaningless
             0)  # param7: Meaningless
+
+        sleep((angle / rate) + .5)
     finally:
         sem.release()

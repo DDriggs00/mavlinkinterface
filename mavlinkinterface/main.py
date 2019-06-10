@@ -19,8 +19,8 @@ class mavlinkInterface(object):
     def __init__(self, queueMode=queueModes.override, asynchronous=False):
         '''
         Creates a new mavlinkInterface Object
-        :param queueMode: See docs/configuration/setDefaultQueueMode for details.\n
-        :param asynchronous: When false or not given, movement commands will return once the movement is done.  When true, movement commands will return immediately and execute in the background.
+        @param queueMode See docs/configuration/setDefaultQueueMode for details.\n
+        @param asynchronous When false or not given, movement commands will return once the movement is done.  When true, movement commands will return immediately and execute in the background.
         '''
         # Set up Logging
         logFileName = ('log_' + str(datetime.now()) + '.log').replace(':', '.')
@@ -105,6 +105,16 @@ class mavlinkInterface(object):
             t.join()
 
     def yaw(self, angle, rate=20, direction=1, relative=1, override=False):
+        '''Rotates the drone around the Z-Axis
+
+        angle: distance to rotate in degrees
+
+        rate: rotational velocity in deg/s
+
+        direction: 1 = Clockwise, -1 = CCW
+
+        relative: (1) - zero is current bearing, (0) - zero is north
+        '''
         if not self.__getSemaphore(override):
             return
 
