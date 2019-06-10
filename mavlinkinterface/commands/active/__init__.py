@@ -1,9 +1,8 @@
 # Import all functions
 from mavlinkinterface.commands.active.lights import setLights
 from mavlinkinterface.commands.active.flightModes import setFlightMode
-from mavlinkinterface.commands.active.movement import move, move3d, yaw, dive
-from mavlinkinterface.commands.active.arm_disarm import arm, disarm
-from mavlinkinterface.commands.active.beta_commands import changeAltitude, yawAbsolute
+from mavlinkinterface.commands.active.movement import move, move3d, dive, yaw
+from mavlinkinterface.commands.active.beta_commands import changeAltitude
 
 __all__ = [
     "setLights",
@@ -12,8 +11,5 @@ __all__ = [
     "move3d",
     "yaw",
     "dive",
-    "arm",
-    "disarm",
-    "yawAbsolute",
     "changeAltitude"
 ]

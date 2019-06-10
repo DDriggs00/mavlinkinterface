@@ -1,4 +1,5 @@
 from time import sleep
+from pymavlink import mavutil
 
 def move3d(ml, sem, time, throttleX, throttleY, throttleZ):
     '''Throttle functions are integers from -100 to 100'''
@@ -112,22 +113,21 @@ def surface(ml, sem):  # TODO
     finally:
         sem.release()
 
-def yaw(ml, sem, angle, absolute=False):
+def yaw(ml, sem, angle, rate=20, direction=1, relative=0):
     try:
-        print("Yawing by " + str(angle) + " degrees")
-        while angle > 180:
-            angle -= 360
-        while angle < -180:
-            angle += 360
-        r = angle * (50 / 9)
-        ml.mav.manual_control_send(
-            ml.target_system,
-            0,      # x [ forward(1000)-backward(-1000)]
-            0,      # y [ left(-1000)-right(1000) ]
-            500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle. ]
-            r,      # r [ 500 will turn the drone 90 degrees ]
-            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1 ]
-        sleep(abs(r) / 200)
+        print("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
 
+        ml.mav.command_long_send(
+            ml.target_system,
+            ml.target_component,
+            mavutil.mavlink.MAV_CMD_CONDITION_YAW,
+            0,  # Confirmation
+            angle,  # param1: target angle (deg)
+            rate,  # param2: angular speed (deg/s)
+            direction,  # param3: direction (-1=ccw, 1=cw)
+            relative,  # param4: 0 = absolute, 1 = relative
+            0,  # param5: Meaningless
+            0,  # param6: Meaningless
+            0)  # param7: Meaningless
     finally:
         sem.release()

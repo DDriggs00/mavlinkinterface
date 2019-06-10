@@ -43,8 +43,6 @@ class mavlinkInterface(object):
         logging.info("Initializing MavLink Connection")
         connectionString = 'udp:' + self.config['mavlink']['connection_ip'] + ':' + self.config['mavlink']['connection_port']
         self.mavlinkConnection = mavutil.mavlink_connection(connectionString)
-        logging.info("Initial Connection Established, Waiting for heartbeat")
-        print("Initial Connection Established, Waiting for heartbeat")
         self.mavlinkConnection.wait_heartbeat()
         logging.info("Successfully connected to target.")
         print("Successfully connected to target.")
@@ -106,12 +104,13 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             t.join()
 
-    def yawAbsolute(self, angle, rate=20, direction=1, relative=0, override=False):
+    def yaw(self, angle, rate=20, direction=1, relative=1, override=False):
         if not self.__getSemaphore(override):
             return
 
+        logging.info("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
         logging.info("yawing in direction: " + str(direction) + " at " + str(rate) + " deg/s in " + str(relative) + " mode " + str(angle) + " degrees")
-        t = Thread(target=commands.active.yawAbsolute, args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
+        t = Thread(target=commands.active.yaw, args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
         t.start()
         if(not self.asynchronous):
             t.join()
@@ -161,16 +160,11 @@ class mavlinkInterface(object):
         return self.flightMode
 
     def arm(self):
-        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection,))
-        t.start()
-        if(not self.asynchronous):
-            t.join()
+        self.mavlinkConnection.arducopter_arm()     # Says it only works on copters, but it definitely works on subs too.
 
     def disarm(self):
-        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection,))
-        t.start()
-        if(not self.asynchronous):
-            t.join()
+        self.mavlinkConnection.arducopter_disarm()  # Says it only works on copters, but it definitely works on subs too.
+
 
 # class queueManager(Queue):
 #     def __init__(self, maxsize):
