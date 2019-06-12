@@ -6,6 +6,7 @@ MLI.move("forward", 3, 100)
 
 # Strafing square
 MLI.dive(1, -100)
+MLI.setFlightMode("ALT_HOLD")
 MLI.move("forward", 3, 50)
 MLI.move("left", 3, 100)
 MLI.move("back", 3, 50)

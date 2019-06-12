@@ -6,19 +6,19 @@ from pymavlink import mavutil
 MLI = mavlinkinterface.mavlinkInterface()
 
 MLI.arm()
-
-MLI.move("forward", 1, 100)
+MLI.setLightsMax()
+MLI.move("forward", 3, 100)
+MLI.dive(1, -100)
+MLI.setFlightMode("ALT_HOLD")
 
 # Strafing square
 MLI.move("forward", 5, 50)
 MLI.move("left", 5, 100)
 MLI.move("back", 5, 50)
 MLI.move("right", 5, 100)
-MLI.yaw2(90)
+MLI.yaw(90)
 
-MLI.dive(10, -100)
-MLI.dive(10, 100)
-MLI.setLightsMax()
+MLI.dive(1, 100)
 MLI.mavlinkConnection.motors_armed()  # Looks broken
 MLI.mavlinkConnection.uptime
 test = MLI.mavlinkConnection.recv_msg()
@@ -31,7 +31,6 @@ test.onboard_control_sensors_enabled
 test.onboard_control_sensors_present
 test.voltage_battery
 test.Vcc
-test.Vservo
 test.flags
 MLI.setFlightMode("MANUAL")
 MLI.setFlightMode("ALT_HOLD")
