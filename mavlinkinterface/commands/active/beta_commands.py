@@ -1,4 +1,4 @@
-from ctypes import c_uint16
+# from ctypes import c_uint16
 from pymavlink import mavutil
 
 # def setAttitude(ml, sem, roll, pitch, yaw, rollSpeed=30, pitchSpeed=30, yawSpeed=30):
@@ -38,58 +38,18 @@ def changeAltitude(ml, sem, rate, altitude):
     finally:
         sem.release()
 
-def lightsMax(ml, sem, rate, altitude):
+def lightsMax(ml, sem):
     try:
         print("Setting lights to max")
+        ml.set_servo(9, 1900)
 
-        ml.mav.RC_CHANNELS_OVERRIDE(
-            ml.target_system,
-            ml.target_component,
-            c_uint16(65535),  # chan1_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan2_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan3_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan4_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan5_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan6_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan7_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan8_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(1900),   # chan9_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan10_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan11_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan12_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan13_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan14_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan15_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan16_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan17_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535))  # chan18_raw: uint16_t (uint16_t_MAX = ignore)
     finally:
         sem.release()
 
-def lightsoff(ml, sem, rate, altitude):
+def lightsoff(ml, sem):
     try:
         print("Setting lights to off")
-        ml.mav.RC_CHANNELS_OVERRIDE(
-            ml.target_system,
-            ml.target_component,
-            c_uint16(65535),  # chan1_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan2_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan3_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan4_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan5_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan6_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan7_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan8_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(1900),   # chan9_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan10_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan11_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan12_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan13_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan14_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan15_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan16_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535),  # chan17_raw: uint16_t (uint16_t_MAX = ignore)
-            c_uint16(65535))  # chan18_raw: uint16_t (uint16_t_MAX = ignore)
+        ml.set_servo(9, 1900)
     finally:
         sem.release()
 

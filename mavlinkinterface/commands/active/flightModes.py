@@ -1,9 +1,9 @@
-from pymavlink import mavutil
+# from pymavlink import mavutil
 
 def setFlightMode(ml, sem, mode):
     # set flight mode
     try:
-        mode = "Depth Hold"
+        # mode = "Depth Hold"
         mode = mode.upper()
         print("Setting Flight Mode to " + str(mode))
         if mode in ("MANUAL", "CIRCLE", "GUIDED", "ACRO"):

@@ -94,6 +94,6 @@ if mode >= 1:
     is1 = True
 i = 128
 
-def getAllData():
+# def getAllData():
 
 MLI.mavlinkConnection.set_servo(9, 1100)
