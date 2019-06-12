@@ -121,7 +121,7 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             t.join()
 
-    def yaw2(self, angle, override=False):
+    def yaw(self, angle, override=False):
         '''Rotates the drone around the Z-Axis
 
         angle: distance to rotate in degrees
@@ -130,12 +130,12 @@ class mavlinkInterface(object):
             return
 
         logging.info("Yawing " + str(angle) + " degrees")
-        t = Thread(target=commands.active.yaw2, args=(self.mavlinkConnection, self.sem, angle,))
+        t = Thread(target=commands.active.yaw, args=(self.mavlinkConnection, self.sem, angle,))
         t.start()
         if(not self.asynchronous):
             t.join()
 
-    def yaw(self, angle, rate=20, direction=1, relative=1, override=False):
+    def yawBeta(self, angle, rate=20, direction=1, relative=1, override=False):
         '''Rotates the drone around the Z-Axis
 
         angle: distance to rotate in degrees
@@ -150,8 +150,7 @@ class mavlinkInterface(object):
             return
 
         logging.info("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
-        logging.info("yawing in direction: " + str(direction) + " at " + str(rate) + " deg/s in " + str(relative) + " mode " + str(angle) + " degrees")
-        t = Thread(target=commands.active.yaw, args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
+        t = Thread(target=commands.active.yawBeta, args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
         t.start()
         if(not self.asynchronous):
             t.join()

@@ -113,7 +113,7 @@ def surface(ml, sem):  # TODO
     finally:
         sem.release()
 
-def yaw(ml, sem, angle, rate=20, direction=1, relative=0):
+def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
     try:
         print("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
 
@@ -134,14 +134,10 @@ def yaw(ml, sem, angle, rate=20, direction=1, relative=0):
     finally:
         sem.release()
 
-def yaw2(ml, sem, angle):
+def yaw(ml, sem, angle, absolute=False):
     try:
         print("Yawing by " + str(angle) + " degrees")
-        # while angle > 180:
-        #     angle -= 360
-        # while angle < -180:
-        #     angle += 360
-        r = angle * (50 / 9)
+        r = int(angle * (50 / 9))
         ml.mav.manual_control_send(
             ml.target_system,
             0,      # x [ forward(1000)-backward(-1000)]
