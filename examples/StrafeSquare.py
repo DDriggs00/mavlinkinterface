@@ -1,6 +1,6 @@
 import mavlinkinterface
 MLI = mavlinkinterface.mavlinkInterface()
-MLI.mavlinkConnection.arducopter_arm()
+MLI.arm()
 
 MLI.move("forward", 3, 100)
 

@@ -47,6 +47,10 @@ class mavlinkInterface(object):
         logging.info("Successfully connected to target.")
         print("Successfully connected to target.")
 
+    def __del__(self):
+        self.disarm()
+        pass
+
     def __getSemaphore(self, override):
         '''Attempts to acquire the movement semaphore based on queuemode. Returns true if semaphore was acquired, false otherwise.'''
         if not self.sem.acquire(blocking=False):  # Semaphore could not be acquired, proceeding by mode
@@ -87,9 +91,22 @@ class mavlinkInterface(object):
         # Kills the currently running task and stops the submarine
         pass
 
-    def setLights(self, brightness):
-        self.lightBrightness = brightness
-        t = Thread(target=commands.active.setLights, args=(brightness,))
+    def setLightsMax(self, override=False):
+        if not self.__getSemaphore(override):
+            return
+
+        # self.lightBrightness = brightness
+        t = Thread(target=commands.active.lightsMax, args=(self.mavlinkConnection, self.sem,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
+    def setLightsOff(self, override=False):
+        if not self.__getSemaphore(override):
+            return
+
+        # self.lightBrightness = brightness
+        t = Thread(target=commands.active.lightsoff, args=(self.mavlinkConnection, self.sem,))
         t.start()
         if(not self.asynchronous):
             t.join()
@@ -100,6 +117,20 @@ class mavlinkInterface(object):
 
         logging.info("Diving at " + str(throttle) + "% throttle for " + str(time) + " seconds")
         t = Thread(target=commands.active.dive, args=(self.mavlinkConnection, self.sem, time, throttle,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
+    def yaw2(self, angle, override=False):
+        '''Rotates the drone around the Z-Axis
+
+        angle: distance to rotate in degrees
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        logging.info("Yawing " + str(angle) + " degrees")
+        t = Thread(target=commands.active.yaw2, args=(self.mavlinkConnection, self.sem, angle,))
         t.start()
         if(not self.asynchronous):
             t.join()
