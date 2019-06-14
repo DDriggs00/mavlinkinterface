@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import mavlinkinterface
 MLI = mavlinkinterface.mavlinkInterface()
 MLI.arm()
