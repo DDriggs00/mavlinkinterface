@@ -1,7 +1,8 @@
-from time import sleep
-from pymavlink import mavutil
+from time import sleep                  # for everything
+from pymavlink import mavutil           # for everything
+from math import pi, sin, cos           # for movement direction
 
-def move3d(ml, sem, time, throttleX, throttleY, throttleZ):
+def move3d(ml, sem, throttleX, throttleY, throttleZ, time):
     '''Throttle functions are integers from -100 to 100'''
     try:
         print("Moving in direction X=" + str(throttleX) + " Y=" + str(throttleY) + " Z=" + str(throttleZ) + " for " + str(time) + " seconds")
@@ -32,18 +33,16 @@ def move(ml, sem, direction, time, throttle=100):
     '''
     Modes the sub in 2 dimensions
     :param direction: The angle (from -180 to 180) to move the sub at
+    :param time: The number of seconds to thrust for
+    :param throttle: The percentage of total thrust to use
     '''
     try:
         print("Moving in direction: " + str(direction) + " at " + str(throttle) + "% throttle for " + str(time) + " seconds")
-        x = y = 0
-        if direction == "forward" or direction == 0:
-            x = 10 * throttle
-        elif direction == "back" or direction == 180 or direction == -180:
-            x = -10 * throttle
-        elif direction == "left" or direction == -90:
-            y = -10 * throttle
-        elif direction == "right" or direction == -90:
-            y = 10 * throttle
+        x = cos(pi * direction / 180)
+        y = sin(pi * direction / 180)
+        scaler = (1000 / max(abs(x), abs(y))) * (throttle / 100)
+        x = round(x * scaler)
+        y = round(y * scaler)
 
         for i in range(0, (time * 4)):
             ml.mav.manual_control_send(
