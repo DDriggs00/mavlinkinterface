@@ -1,6 +1,6 @@
 
 # Import main function
-from mavlinkinterface.main import *
+from mavlinkinterface.main import mavlinkInterface
 
 # Import enums
 from mavlinkinterface.enum.flightModes import flightModes
