@@ -1,6 +1,36 @@
-# dive( depth )
+# dive( time, throttle \<optional> )
 
-This call is used to change the depth of the submarine. It returns true upon success, and false upon obstruction or surfacing
+This call is used to change the depth of the submarine.
+
+## Parameters
+
+time (float):  
+> The time to dive in seconds
+
+throttle (int)
+> The percentage throttle to use when diving.  
+> Negative numbers indicate an increase in depth.
+
+## Return Values
+
+Returns void.  
+
+## Examples
+
+```py
+dive(depth = -10)
+# The submarine descends by 10 meters or until it is obstructed
+
+dive(depth = 10)
+# The submarine ascends by 10 meters or until it surfaces or is obstructed
+
+dive(depth = 5, absolute)
+# The submarine moves to a depth of 5 meters below the surface or until it is obstructed
+```
+
+# dive( depth ) \<future>
+
+This call is used to change the depth of the submarine.
 
 ## Parameters
 

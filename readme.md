@@ -2,7 +2,6 @@
 
 ## Features
 
-- Python!
 - Full Logging of some or all sensor data (configurable)
 - All functions return either:
     1. a single variable
@@ -22,40 +21,45 @@ heartbeat
 - Written using Python 3.7 latest
 - Dependencies
   - [pymavlink](https://github.com/ArduPilot/pymavlink)
+  - pyquaternian
 
 ## Active functions
 
 TODO: add pitch, roll, setThrust, setAltitudeTarget
 
+X: Item is not yet Implemented  
+B: A Basic version has been Implemented
+
 - [arm()](docs/Active/arm.md)
-- [armGrab( strength \<optional>, percent \<optional> )](docs/Active/armGrab.md)
-- [armRelease( percent \<optional> )](docs/Active/armRelease.md)
-- [cameraTilt( angle, speed \<optional> )](docs/Active/cameraTilt.md)
+- X [gripperClose( strength \<optional>, percent \<optional> )](docs/Active/armGrab.md)
+- X [gripperOpen( percent \<optional> )](docs/Active/armRelease.md)
+- X [cameraTilt( angle, speed \<optional> )](docs/Active/cameraTilt.md)
 - [disarm()](docs/Active/disarm.md)
-- [dive( depth )](docs/Active/dive.md)
+- B[dive( depth )](docs/Active/dive.md)
 - [move( direction, time, throttle \<optional> )](docs/Active/move.md)
+- [move3d( throttleX, throttleY, throttleZ, time )](docs/Active/move3d.md)
 - [setFlightMode( mode )](docs/Active/setFlightMode.md)
-- [setLights( brightness )](docs/Active/setLights.md)
-- [surface()](docs/Active/surface.md)
-- [yaw( degrees )](docs/Active/yaw.md)
+- X [setLights( brightness )](docs/Active/setLights.md)
+- X [surface()](docs/Active/surface.md)
+- B [yaw( degrees )](docs/Active/yaw.md)
 
 ## Passive functions
 
-- [cameraStartFeed()](docs/Passive/cameraStartFeed.md)
-- [cameraVideoStart( time \<optional>, resolution \<optional> )](docs/Passive/cameraVideoStart.md)
-- [cameraVideoStop()](docs/Passive/cameraVideoStop.md)
-- [cameraPhoto( resolution \<optional>, zoom \<optional>, )](docs/Passive/cameraPhoto.md)
+- X [cameraStartFeed()](docs/Passive/cameraStartFeed.md)
+- X [cameraVideoStart( time \<optional>, resolution \<optional> )](docs/Passive/cameraVideoStart.md)
+- X [cameraVideoStop()](docs/Passive/cameraVideoStop.md)
+- X [cameraPhoto( resolution \<optional>, zoom \<optional>, )](docs/Passive/cameraPhoto.md)
 - [getAccelerometerData()](docs/Passive/getAccelerometerData.md)
 - [getBatteryData()](docs/Passive/getBatteryData.md)
-- [getBearing()](docs/Passive/getBearing.md)
-- [getDepth()](docs/Passive/getDepth.md)
-- [getGyroscopeData()](docs/Passive/getGyroscopeData.md)
-- [getLeakData()](docs/Passive/getLeakData.md)
-- [getMagnetometerData()](docs/Passive/getMagnetometerData.md)
-- [getPressureExternal()](docs/Passive/getPressureExternal.md)
-- [getPressureInternal()](docs/Passive/getPressureInternal.md)
-- [getTemperature()](docs/Passive/getTemperature.md)
-- [getAllSensorData()](docs/Passive/getAllSensorData.md)
+- X [getBearing()](docs/Passive/getBearing.md)
+- X [getDepth()](docs/Passive/getDepth.md)
+- X [getGyroscopeData()](docs/Passive/getGyroscopeData.md)
+- X [getLeakData()](docs/Passive/getLeakData.md)
+- X [getMagnetometerData()](docs/Passive/getMagnetometerData.md)
+- X [getPressureExternal()](docs/Passive/getPressureExternal.md)
+- X [getPressureInternal()](docs/Passive/getPressureInternal.md)
+- X [getTemperature()](docs/Passive/getTemperature.md)
+- X [getAllSensorData()](docs/Passive/getAllSensorData.md)
 
 TODO:
 
@@ -63,9 +67,9 @@ TODO:
 
 ## Configuration functions
 
-- [setLoggingLevel( sensor, level )](docs/Configuration/setLoggingLevel.md)
-- [setRecordingInterval( interval )](docs/Configuration/setRecordingInterval.md)
-- [setDefaultQueueMode( mode )](docs/Configuration/setDefaultQueueMode.md)
+- X [setLoggingLevel( sensor, level )](docs/Configuration/setLoggingLevel.md)
+- X [setRecordingInterval( interval )](docs/Configuration/setRecordingInterval.md)
+- X [setDefaultQueueMode( mode )](docs/Configuration/setDefaultQueueMode.md)
 
 ## Universal Parameters
 
