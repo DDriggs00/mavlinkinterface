@@ -160,7 +160,7 @@ class mavlinkInterface(object):
             return
 
         logging.info("Moving to altitude " + str(altitude) + " at " + str(rate) + " m/s.")
-        t = Thread(target=commands.active.move, args=(self.mavlinkConnection, self.sem, rate, altitude,))
+        t = Thread(target=commands.active.changeAltitude, args=(self.mavlinkConnection, self.sem, rate, altitude,))
         t.start()
         if(not self.asynchronous):
             t.join()
@@ -175,12 +175,12 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             t.join()
 
-    def move3d(self, time, throttleX, throttleY, throttleZ, override=False):
+    def move3d(self, throttleX, throttleY, throttleZ, time, override=False):
         if not self.__getSemaphore(override):
             return
 
         logging.info("Moving in direction x=" + str(throttleX) + " y=" + str(throttleY) + " z=" + str(throttleZ) + " for " + str(time) + "seconds")
-        t = Thread(target=commands.active.move3d, args=(self.mavlinkConnection, self.sem, time, throttleX, throttleY, throttleZ,))
+        t = Thread(target=commands.active.move3d, args=(self.mavlinkConnection, self.sem, throttleX, throttleY, throttleZ, time,))
         t.start()
         if(not self.asynchronous):
             t.join()
@@ -199,13 +199,44 @@ class mavlinkInterface(object):
     def getFlightMode(self):
         return self.flightMode
 
-    def arm(self):
-        self.mavlinkConnection.arducopter_arm()     # Says it only works on copters, but it definitely works on subs too.
+    def arm(self, override=False):
+        if not self.__getSemaphore(override):
+            return
 
-    def disarm(self):
-        self.mavlinkConnection.arducopter_disarm()  # Says it only works on copters, but it definitely works on subs too.
+        logging.info("Arming")
+        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection, self.sem,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
+
+    def disarm(self, override=False):
+        if not self.__getSemaphore(override):
+            return
+
+        logging.info("Disarming")
+        t = Thread(target=commands.active.disarm, args=(self.mavlinkConnection, self.sem,))
+        t.start()
+        if(not self.asynchronous):
+            t.join()
 
 
 # class queueManager(Queue):
 #     def __init__(self, maxsize):
 #         return super().__init__(maxsize)
+
+class RThread(Thread):    # https://stackoverflow.com/questions/6893968/how-to-get-the-return-value-from-a-thread-in-python
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        try:
+            if self._target is not None:
+                self._return = self._target(*self._args, **self._kwargs)
+        finally:
+            del self._target, self._args, self._kwargs
+
+    def join(self, *args):
+        Thread.join(self, *args)
+        return self._return
