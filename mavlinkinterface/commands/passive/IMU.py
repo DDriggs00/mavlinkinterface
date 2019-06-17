@@ -1,7 +1,7 @@
 import json
 
 def getMagnetometerData(ml):
-    imu = ml.recv_match(type="RAW_IMU")
+    imu = ml.recv_match(type="RAW_IMU", blocking=True)
     data = {}
     data['X'] = imu.xmag
     data['Y'] = imu.ymag
@@ -9,7 +9,7 @@ def getMagnetometerData(ml):
     return json.dumps(data)
 
 def getAccelerometerData(ml):
-    imu = ml.recv_match(type="RAW_IMU")
+    imu = ml.recv_match(type="RAW_IMU", blocking=True)
     data = {}
     data['X'] = imu.xacc
     data['Y'] = imu.yacc
@@ -17,7 +17,7 @@ def getAccelerometerData(ml):
     return json.dumps(data)
 
 def getGyroscopeData(ml):
-    imu = ml.recv_match(type="RAW_IMU")
+    imu = ml.recv_match(type="RAW_IMU", blocking=True)
     data = {}
     data['X'] = imu.xgyro
     data['Y'] = imu.ygyro
