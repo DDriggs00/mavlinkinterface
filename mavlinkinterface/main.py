@@ -4,11 +4,11 @@ from threading import Thread            # For pretty much everything
 from threading import Semaphore         # To prevent multiple movement commands at once
 # from queue import Queue                 # For queuing mode
 import logging                          # For logging
-from datetime import datetime           # For naming log file
 # import platform                         # For choosing log location
 from configparser import ConfigParser   # For configuration details
 
 # Local Imports
+from mavlinkinterface.logger import get_logger              # For Logging
 import mavlinkinterface.commands as commands                # For calling commands
 from mavlinkinterface.rthread import RThread                # For functions that have return values
 from mavlinkinterface.datarefresher import dataRefresher    # For keeping the message socket clean
@@ -25,11 +25,8 @@ class mavlinkInterface(object):
         :param queueMode: See docs/configuration/setDefaultQueueMode for details.\n
         :param asynchronous: When false or not given, movement commands will return once the movement is done.  When true, movement commands will return immediately and execute in the background.
         '''
-        # Set up Logging
-        logFileName = ('log_' + str(datetime.now()) + '.log').replace(':', '.')
-        logging.basicConfig(filename=logFileName,
-                            format='%(asctime)s - %(levelname)s - %(message)s',
-                            level=logging.DEBUG)
+
+        get_logger("Main")
 
         # Import config values
         logging.debug("importing configuration file")
@@ -54,7 +51,7 @@ class mavlinkInterface(object):
         print("Successfully connected to target.")
 
         # start dataRefresher
-        self.refresher = dataRefresher(self.mavlinkConnection)
+        self.refresher = Thread(target=dataRefresher, args=(self.mavlinkConnection,))
         logging.info("Started dataRefresher process")
 
     def __del__(self):
@@ -144,6 +141,46 @@ class mavlinkInterface(object):
 
         logging.info("Diving at " + str(throttle) + "% throttle for " + str(time) + " seconds")
         self.t = Thread(target=commands.active.dive, args=(self.mavlinkConnection, self.sem, time, throttle,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def diveDepth(self, depth, throttle=100, absolute=False, override=False):
+        '''
+        Move vertically by a certain distance, or to a specific altitude
+
+        :param depth: Distance to dive or rise. Deeper is negative
+        :param throttle: Percent throttle to use
+        :param absolute <optional>: When True, dives to the depth given relative to sea level
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.diveDepth, args=(self.mavlinkConnection, self.sem, depth, throttle, absolute,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def gripperOpen(self, override=False):
+        '''
+        Opens the Gripper Arm
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.gripperOpen, args=(self.mavlinkConnection, self.sem,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def gripperClose(self, override=False):
+        '''
+        Closes the Gripper Arm
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.gripperClose, args=(self.mavlinkConnection, self.sem,))
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
