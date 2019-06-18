@@ -14,7 +14,7 @@ class dataRefresher(object):
             ml.recv_match(type="RAW_IMU", blocking=False)           # Accel/Gyro/mag data
             ml.recv_match(type="SCALED_PRESSURE", blocking=False)   # Pressure/temp
             ml.recv_match(type="SYS_STATUS", blocking=False)        # Battery
-            sleep(.25)
+            sleep(.1)
 
     def kill(self):
         '''Stops the data gathering'''
