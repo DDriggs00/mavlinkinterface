@@ -1,7 +1,10 @@
 from pymavlink import mavutil
+from mavlinkinterface.logger import getLogger
 
 def arm(ml, sem):
     try:
+        log = getLogger("Status")
+        log.info("Sending arming signal")
         ml.mav.command_long_send(
             ml.target_system,
             ml.target_component,
@@ -20,6 +23,8 @@ def arm(ml, sem):
 
 def disarm(ml, sem):
     try:
+        log = getLogger("Status")
+        log.info("Sending disarming signal")
         ml.mav.command_long_send(
             ml.target_system,
             ml.target_component,

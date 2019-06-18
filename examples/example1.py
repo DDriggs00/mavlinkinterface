@@ -1,71 +1,51 @@
 # Import interface
 import mavlinkinterface
 from pymavlink import mavutil
-# exit()
+
 # Create interface object
 MLI = mavlinkinterface.mavlinkInterface()
 
+# Arm the drone
 MLI.arm()
-MLI.setLightsMax()
-MLI.move("forward", 3, 100)
-MLI.dive(1, -100)
-MLI.setFlightMode("ALT_HOLD")
 
+# Function test group 1
+MLI.setLightsMax()
+MLI.move(0, 3, 100)
+MLI.dive(5, -100)
+MLI.setFlightMode("ALT_HOLD")
+MLI.diveDepth(10, absolute=False)
 # Strafing square
-MLI.move("forward", 5, 50)
-MLI.move("left", 5, 100)
-MLI.move("back", 5, 50)
-MLI.move("right", 5, 100)
+MLI.move(0, 5, 50)
+MLI.move(270, 5, 100)
+MLI.move(180, 5, 50)
+MLI.move(90, 5, 100)
 MLI.yaw(90)
 
+MLI.getDepth()
+MLI.getPressureExternal()
 MLI.dive(1, 100)
 MLI.mavlinkConnection.motors_armed()  # Looks broken
 MLI.mavlinkConnection.uptime
+
 test = MLI.mavlinkConnection.recv_msg()
 test.get_type()
-test.time_boot_ms
-test.get_header()
-test.get_payload()
 test.get_fieldnames()
-test.onboard_control_sensors_enabled
-test.onboard_control_sensors_present
-test.voltage_battery
-test.Vcc
-test.flags
 MLI.setFlightMode("MANUAL")
 MLI.setFlightMode("ALT_HOLD")
 MLI.setFlightMode("STABILIZE")
-MLI.setFlightMode("ACRO")
-# MLI.mavlinkConnection.set_mode("POSHOLD")
-# MLI.mavlinkConnection.set_mode("AUTO")
-# MLI.mavlinkConnection.set_mode("CIRCLE")
-# MLI.mavlinkConnection.set_mode("GUIDED")
+
 
 MLI.changeAltitude(1, -1)
-MLI.disarm()
-
-test2 = MLI.mavlinkConnection.recv_match(type="SYS_STATUS")
-test2.get_fieldnames()
-test2.voltage_battery
-test2.battery_remaining
-test2.current_battery
-test2.drop_rate_comm
-test2.load
+test1 = MLI.mavlinkConnection.recv_msg()
+test_pressure = MLI.mavlinkConnection.recv_match(type="SCALED_PRESSURE")
+test_IMU = MLI.mavlinkConnection.recv_match(type="SCALED_IMU")
+test_text = MLI.mavlinkConnection.recv_match(type="STATUSTEXT")
+test_text.text.upper()
 
 test2 = MLI.mavlinkConnection.recv_match(type="HEARTBEAT")
-test2.get_fieldnames()
-test2.type
-test2.autopilot
-test2.base_mode
-test2.custom_mode
-test2.system_status
-test2.mavlink_version
 mavutil.mavlink.enums['MAV_TYPE'][test2.type].name
 mavutil.mavlink.enums['MAV_AUTOPILOT'][test2.autopilot].name
-mavutil.mavlink.enums['MAV_MODE_FLAG'][test2.base_mode].name
-mavutil.mavlink.enums['MAV_AUTOPILOT'][test2.autopilot].name
 mode = test2.base_mode
-
 is128 = is64 = is32 = is16 = is8 = is4 = is2 = is1 = False
 if mode >= 128:
     mode -= 128
@@ -91,8 +71,3 @@ if mode >= 2:
 if mode >= 1:
     mode -= 1
     is1 = True
-i = 128
-
-# def getAllData():
-
-MLI.mavlinkConnection.set_servo(9, 1100)

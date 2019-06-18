@@ -1,4 +1,4 @@
-# from pymavlink import mavutil
+from mavlinkinterface.logger import getLogger
 
 def setFlightMode(ml, sem, mode):
     # set flight mode
@@ -16,8 +16,9 @@ def setFlightMode(ml, sem, mode):
         else:
             print("Sorry, that mode does not exist. Valid flight modes are: MANUAL, CIRCLE, GUIDED, ACRO, ALT_HOLD, POS_HOLD, STABILIZE")
             return
-        print("Setting Flight Mode to " + str(mode))
-
+        
+        log = getLogger("Movement")
+        log.info("Setting Flight Mode to " + str(mode))
         ml.set_mode(mode)
 
     finally:

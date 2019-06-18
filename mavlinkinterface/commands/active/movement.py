@@ -2,13 +2,17 @@ from time import sleep                  # for everything
 from pymavlink import mavutil           # for everything
 from math import pi, sin, cos           # for movement direction
 
+from mavlinkinterface.logger import getLogger
+
 def move3d(ml, sem, throttleX, throttleY, throttleZ, time):
     '''Throttle functions are integers from -100 to 100'''
     try:
-        print("Moving in direction X=" + str(throttleX) + " Y=" + str(throttleY) + " Z=" + str(throttleZ) + " for " + str(time) + " seconds")
+        log = getLogger("Movement")
+        log.info("Moving in direction X=" + str(throttleX) + " Y=" + str(throttleY) + " Z=" + str(throttleZ) + " for " + str(time) + " seconds")
         x = 10 * throttleX
         y = 10 * throttleY
         z = 5 * throttleZ + 500
+
         for i in range(0, time * 4):
             ml.mav.manual_control_send(
                 ml.target_system,
@@ -37,7 +41,8 @@ def move(ml, sem, direction, time, throttle=100):
     :param throttle: The percentage of total thrust to use
     '''
     try:
-        print("Moving in direction: " + str(direction) + " at " + str(throttle) + "% throttle for " + str(time) + " seconds")
+        log = getLogger("Movement")
+        log.info("Moving in direction: " + str(direction) + " at " + str(throttle) + "% throttle for " + str(time) + " seconds")
         x = cos(pi * direction / 180)
         y = sin(pi * direction / 180)
         scaler = (1000 / max(abs(x), abs(y))) * (throttle / 100)
@@ -64,20 +69,14 @@ def move(ml, sem, direction, time, throttle=100):
     finally:
         sem.release()
 
-def moveAbsolute(ml, sem, direction, time, throttle=100):  # TODO
-    # TODO: insert movement code here
-    try:
-        sleep(5)
-    finally:
-        sem.release()
-
 def dive(ml, sem, time, throttle):
     '''
     :param time: the number of seconds to power the thrusters
     :param throttle: Throttle value is from -100 to 100, with negative indicating down
     '''
     try:
-        print("Diving at " + str(throttle) + "% throttle for " + str(time) + "seconds")
+        log = getLogger("Movement")
+        log.info("Diving at " + str(throttle) + "% throttle for " + str(time) + " seconds")
         z = (throttle * 5) + 500
         for i in range(0, (time * 4)):
             ml.mav.manual_control_send(
@@ -98,36 +97,28 @@ def dive(ml, sem, time, throttle):
     finally:
         sem.release()
 
-def diveAbsolute(ml, sem, depth):  # TODO
-    # TODO: insert movement code here
-    try:
-        sleep(5)
-    finally:
-        sem.release()
-
 def surface(ml, sem):  # TODO
-    # TODO: insert movement code here
-    try:
-        sleep(5)
-    finally:
-        sem.release()
+    from mavlinkinterface.commands.active.beta_commands import diveDepth
+    diveDepth(ml, sem, 0, throttle=100, absolute=True)
+
 
 def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
     try:
-        print("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
+        log = getLogger("Movement")
+        log.info("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
 
         ml.mav.command_long_send(
             ml.target_system,
             ml.target_component,
             mavutil.mavlink.MAV_CMD_CONDITION_YAW,
-            0,  # Confirmation
-            angle,  # param1: target angle (deg)
-            rate,  # param2: angular speed (deg/s)
-            direction,  # param3: direction (-1=ccw, 1=cw)
-            relative,  # param4: 0 = absolute, 1 = relative
-            0,  # param5: Meaningless
-            0,  # param6: Meaningless
-            0)  # param7: Meaningless
+            0,          # Confirmation
+            angle,      # param 1: target angle (deg)
+            rate,       # param 2: angular speed (deg/s)
+            direction,  # param 3: direction (-1=ccw, 1=cw)
+            relative,   # param 4: 0 = absolute, 1 = relative
+            0,          # param 5: Empty
+            0,          # param 6: Empty
+            0)          # param 7: Empty
 
         sleep((angle / rate) + .5)
     finally:
@@ -135,7 +126,8 @@ def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
 
 def yaw(ml, sem, angle, absolute=False):
     try:
-        print("Yawing by " + str(angle) + " degrees")
+        log = getLogger("Movement")
+        log.info("Yawing by " + str(angle) + " degrees")
         r = int(angle * (50 / 9))
         ml.mav.manual_control_send(
             ml.target_system,
