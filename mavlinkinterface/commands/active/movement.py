@@ -69,7 +69,7 @@ def move(ml, sem, direction, time, throttle=100):
     finally:
         sem.release()
 
-def dive(ml, sem, time, throttle):
+def diveTime(ml, sem, time, throttle):
     '''
     :param time: the number of seconds to power the thrusters
     :param throttle: Throttle value is from -100 to 100, with negative indicating down
@@ -97,9 +97,84 @@ def dive(ml, sem, time, throttle):
     finally:
         sem.release()
 
+
+def dive(mli, depth, throttle=100, absolute=False):
+    '''
+    :param depth: The change in depth, negative being down
+    :param throttle: Percent of thruster power to use
+    '''
+    try:
+        log = getLogger("Movement")
+        log.info("Diving to depth=" + str(depth) + " at throttle=" + str(throttle) + "% power, absolute=" + str(absolute))
+        currentDepth = mli.getDepth()
+
+        if absolute:
+            # In absolute mode, just go to a depth
+            targetDepth = depth
+        else:   # relative
+            # In relative mode, go up/down by a depth
+            targetDepth = depth + currentDepth
+
+        if targetDepth > 0:
+            log.error("Cannot Rise above the Surface, aborting")
+            raise ValueError("Cannot Rise above the Surface, aborting command")
+        i = 0
+        oldDepth = currentDepth
+        stuck = False
+        # If the drone is below the desired depth
+        if currentDepth > targetDepth:     # Need to Dive
+            z = (throttle * 5) + 500 * -1
+            while currentDepth > targetDepth + .5 and not stuck:     # Until within 1.5m of target, thrust at desired throttle
+                currentDepth = mli.getDepth()
+                mli.mavlinkConnection.mav.manual_control_send(
+                    mli.mavlinkConnection.target_system,
+                    0,  # x [ forward(1000)-backward(-1000)]
+                    0,  # y [ left(-1000)-right(1000) ]
+                    z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
+                    0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being 1000 and clockwise being -1000, and the yaw of a vehicle]
+                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                if i == 30:                                 # If, over the course 5 sec
+                    if -1 <= oldDepth - currentDepth <= 1:  # If depth has not changed
+                        stuck = True                        # The drone must either be stuck or at the surface, but miscalibrated
+                    i = 0
+                    oldDepth = currentDepth
+                i += 1
+                sleep(0.1)
+        # If the drone is below the desired depth
+        elif currentDepth < targetDepth:
+            z = (throttle * 5) + 500
+            while currentDepth < targetDepth + .5 and not stuck:     # Until within 1.5m of target, thrust at desired throttle
+                currentDepth = mli.getDepth()
+                mli.mavlinkConnection.mav.manual_control_send(
+                    mli.mavlinkConnection.target_system,
+                    0,  # x [ forward(1000)-backward(-1000)]
+                    0,  # y [ left(-1000)-right(1000) ]
+                    z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
+                    0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being 1000 and clockwise being -1000, and the yaw of a vehicle]
+                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                if i == 30:                                 # If, over the course 5 sec
+                    if -1 <= oldDepth - currentDepth <= 1:  # If depth has not changed
+                        stuck = True                        # The drone must either be stuck or at the surface, but miscalibrated
+                    i = 0
+                    oldDepth = currentDepth
+                i += 1
+                # Sleep handled by blocking mode on getDepth
+
+        # Stop thrusting when the desired depth has been reached
+        mli.mavlinkConnection.mav.manual_control_send(
+            mli.mavlinkConnection.target_system,
+            0,      # x [ forward(1000)-backward(-1000)]
+            0,      # y [ left(-1000)-right(1000) ]
+            500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
+            0,      # r [ corresponds to a twisting of the joystick, with counter-clockwise being 1000 and clockwise being -1000, and the yaw of a vehicle]
+            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+    finally:
+        mli.sem.release()
+
 def surface(ml, sem):  # TODO
-    from mavlinkinterface.commands.active.beta_commands import diveDepth
-    diveDepth(ml, sem, 0, throttle=100, absolute=True)
+    log = getLogger("Movement")
+    log.info("Rising to Surface")
+    dive(ml, sem, 0, throttle=100, absolute=True)
 
 
 def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
