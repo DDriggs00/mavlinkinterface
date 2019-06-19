@@ -5,12 +5,12 @@ from threading import Semaphore         # To prevent multiple movement commands 
 # from queue import Queue                 # For queuing mode
 # import platform                         # For choosing log location
 from configparser import ConfigParser   # For configuration details
-from datetime import datetime
+import json                             # For returning JSON
 
 # Local Imports
 from mavlinkinterface.logger import getLogger               # For Logging
 import mavlinkinterface.commands as commands                # For calling commands
-from mavlinkinterface.rthread import RThread                # For functions that have return values
+# from mavlinkinterface.rthread import RThread                # For functions that have return values
 from mavlinkinterface.enum.queueModes import queueModes     # For use in async mode
 
 class mavlinkInterface(object):
@@ -168,6 +168,18 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
+    def surface(self, override=False):
+        '''
+        Thrust upward at full power until reaching the surface
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.surface, args=(self,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
     def gripperOpen(self, override=False):
         '''
         Opens the Gripper Arm
@@ -256,34 +268,44 @@ class mavlinkInterface(object):
 
     # Sensor reading commands
     def getBatteryData(self):
-        '''Returns a JSON containing battery Data'''
-        self.t = RThread(target=commands.passive.getBatteryData, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        '''Returns a JSON-formatted string containing battery data'''
+        data = {}
+        data['voltage'] = self.messages['SYS_STATUS'].voltage_battery / 1000        # convert to volts
+        data['current'] = self.messages['SYS_STATUS'].current_battery
+        data['percent_remaining'] = self.messages['SYS_STATUS'].battery_remaining
+        return json.dumps(data)
 
     def getAccelerometerData(self):
         '''Returns a JSON containing Accelerometer Data'''
-        self.t = RThread(target=commands.passive.getAccelerometerData, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        data = {}
+        data['X'] = self.messages['RAW_IMU'].xacc
+        data['Y'] = self.messages['RAW_IMU'].yacc
+        data['Z'] = self.messages['RAW_IMU'].zacc
+        return json.dumps(data)
 
     def getGyroscopeData(self):
         '''Returns a JSON containing Gyroscope Data'''
-        self.t = RThread(target=commands.passive.getGyroscopeData, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        data = {}
+        data['X'] = self.messages['RAW_IMU'].xgyro
+        data['Y'] = self.messages['RAW_IMU'].ygyro
+        data['Z'] = self.messages['RAW_IMU'].zgyro
+        return json.dumps(data)
 
     def getMagnetometerData(self):
         '''Returns a JSON containing Magnetometer Data'''
-        self.t = RThread(target=commands.passive.getMagnetometerData, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        data = {}
+        data['X'] = self.messages['RAW_IMU'].xmag
+        data['Y'] = self.messages['RAW_IMU'].ymag
+        data['Z'] = self.messages['RAW_IMU'].zmag
+        return json.dumps(data)
 
     def getIMUData(self):
         '''Returns a JSON containing IMU Data'''
-        self.t = RThread(target=commands.passive.getIMUData, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        data = {}
+        data["Magnetometer"] = json.loads(self.getMagnetometerData())
+        data["Accelerometer"] = json.loads(self.getAccelerometerData())
+        data["Gyroscope"] = json.loads(self.getGyroscopeData())
+        return json.dumps(data)
 
     def getPressureExternal(self):
         ''' Returns the reading of the pressure sensor in Pascals '''
