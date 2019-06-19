@@ -1,6 +1,6 @@
 # setFlightMode( mode )
 
-Sets the submarine's flight mode to the given value.
+Sets the drone's flight mode to the given value.
 
 ## Flight Modes
 
@@ -47,5 +47,5 @@ Returns void
 
 ```py
 setFlightMode(depth_hold)
-# sets the submarine to depth hold mode
+# sets the drone to depth hold mode
 ```

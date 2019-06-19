@@ -1,6 +1,6 @@
 # surface()
 
-This call brings the submarine to the surface. It returns True upon success and False upon obstruction.  
+This call brings the drone to the surface. It returns True upon success and False upon obstruction.  
 
 ## Return Values
 
@@ -12,5 +12,5 @@ Upon Failure, returns the reason for failure and the new depth
 
 ```py
 surface
-# The submarine ascends to the surface
+# The drone ascends to the surface
 ```

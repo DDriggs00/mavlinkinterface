@@ -1,6 +1,6 @@
 # move( throttleX, throttleY, throttleZ, time )
 
-Move the submarine in a given direction and power level for *time* seconds
+Move the drone in a given direction and power level for *time* seconds
 
 ## Parameters
 
@@ -24,5 +24,5 @@ Returns void
 
 ```py
 move3d(throttleX=100, throttleY=100, throttleZ=0, time = 15)
-# Moves the submarine forward and to the right at 100% power for 15 seconds
+# Moves the drone forward and to the right at 100% power for 15 seconds
 ```

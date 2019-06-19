@@ -5,7 +5,7 @@ Reads the data from the internal pressure sensor
 ## Return values
 
 Returns a float.  
-Returns the internal pressure on the submarine in kiloPascals
+Returns the internal pressure on the drone in kiloPascals
 
 ## Examples
 

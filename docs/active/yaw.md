@@ -1,7 +1,7 @@
 # yaw( degrees )
 
-Relative: yaws the submarine in place by *degrees*  degrees  
-Absolute: yaws the submarine to face in the direction *degrees* degrees
+Relative: yaws the drone in place by *degrees*  degrees  
+Absolute: yaws the drone to face in the direction *degrees* degrees
 
 ## Parameters
 
@@ -19,11 +19,11 @@ If the action could not be completed (eg. Obstruction, overridden), returns the 
 
 ```py
 rotate(degrees = 15)
-# Result: The submarine yaws to the right by 15 degrees
+# Result: The drone yaws to the right by 15 degrees
 
 rotate(degrees = -720)
-# Result: The submarine yaws to the left by 2 full rotations
+# Result: The drone yaws to the left by 2 full rotations
 
 rotate(degrees = -15, absolute)
-# Result: The submarine yaws the shortest distance to face 15 degrees to the left of magnetic north
+# Result: The drone yaws the shortest distance to face 15 degrees to the left of magnetic north
 ```

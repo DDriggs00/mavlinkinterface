@@ -5,7 +5,7 @@ Reads the data from the external pressure sensor
 ## Return values
 
 Returns a float.  
-Returns the external pressure on the submarine in kiloPascals
+Returns the external pressure on the drone in kiloPascals
 
 ## Examples
 

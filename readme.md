@@ -35,7 +35,7 @@ B: A Basic version has been Implemented
 - X [gripperOpen( percent \<optional> )](docs/Active/armRelease.md)
 - X [cameraTilt( angle, speed \<optional> )](docs/Active/cameraTilt.md)
 - [disarm()](docs/Active/disarm.md)
-- B[dive( depth )](docs/Active/dive.md)
+- [dive( depth, throttle \<optional> )](docs/Active/dive.md)
 - [move( direction, time, throttle \<optional> )](docs/Active/move.md)
 - [move3d( throttleX, throttleY, throttleZ, time )](docs/Active/move3d.md)
 - [setFlightMode( mode )](docs/Active/setFlightMode.md)
@@ -88,9 +88,9 @@ When present, this argument causes any currently executing or queued commands to
 
 ### Absolute (switch)
 
-This argument causes movement commands to use absolute coordinates and directions, rather than coordinates and directions relative to the submarine.
+This argument causes movement commands to use absolute coordinates and directions, rather than coordinates and directions relative to the drone.
 
 - When present, direction is relative to magnetic north, depth is relative to the surface, etc.
-- When absent, direction coordinates, depth, and distances are all relative to the submarine's current location and the direction it is facing
+- When absent, direction coordinates, depth, and distances are all relative to the drone's current location and the direction it is facing
 
 Note: This argument is only relevant where a direction, depth, or coordinates are present
