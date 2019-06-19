@@ -5,13 +5,12 @@ from threading import Semaphore         # To prevent multiple movement commands 
 # from queue import Queue                 # For queuing mode
 # import platform                         # For choosing log location
 from configparser import ConfigParser   # For configuration details
+from datetime import datetime
 
 # Local Imports
 from mavlinkinterface.logger import getLogger               # For Logging
 import mavlinkinterface.commands as commands                # For calling commands
 from mavlinkinterface.rthread import RThread                # For functions that have return values
-from mavlinkinterface.datarefresher import dataRefresher    # For keeping the message socket clean
-from mavlinkinterface.statusMonitor import statusMonitor    # For leak detection and console forwarding
 from mavlinkinterface.enum.queueModes import queueModes     # For use in async mode
 
 class mavlinkInterface(object):
@@ -26,7 +25,7 @@ class mavlinkInterface(object):
         :param asynchronous: When false or not given, movement commands will return once the movement is done.  When true, movement commands will return immediately and execute in the background.
         '''
         # Initialize logger
-        self.log = getLogger("Main")
+        self.log = getLogger("Main", doPrint=True)
 
         # Import config values
         self.log.debug("importing configuration file")
@@ -37,7 +36,9 @@ class mavlinkInterface(object):
         self.log.debug("Setting class variables")
         self.queueMode = queueMode
         self.asynchronous = asynchronous
-        self.lightBrightness = 0
+
+        # Create variables to contain mavlink message data
+        self.messages = {}
 
         # Create Semaphore
         self.sem = Semaphore(1)
@@ -53,22 +54,24 @@ class mavlinkInterface(object):
         self.killEvent = Event()
 
         # start statusMonitor
-        self.monitor = Thread(target=statusMonitor, args=(self,))
-        self.log.debug("Started statusMonitor process")
+        self.leakDetectorThread = Thread(target=self.leakDetector, args=(self.killEvent,))
+        self.leakDetectorThread.daemon = True
+        self.leakDetectorThread.start()
 
         # start dataRefreshers
-        self.refresher = Thread(target=dataRefresher, args=(self.mavlinkConnection, "RAW_IMU", self.killEvent, True))
-        self.refresher = Thread(target=dataRefresher, args=(self.mavlinkConnection, "SCALED_PRESSURE", self.killEvent, True))
-        self.refresher = Thread(target=dataRefresher, args=(self.mavlinkConnection, "SYS_STATUS", self.killEvent, True))
-        self.refresher = Thread(target=dataRefresher, args=(self.mavlinkConnection, "HEARTBEAT", self.killEvent, True))
-        self.log.debug("Started dataRefresher processes")
+        self.refresher = Thread(target=self.updateMessage, args=(self.killEvent,))
+        self.refresher.daemon = True
+        self.refresher.start()
+        self.log.debug("__init__ end")
 
     def __del__(self):
         '''Clean up while exiting'''
+        print("__del__ begin")
         # NOTE: logging does not work in __del__ for some reason
 
         # Stop statusMonitor and DataRefresher processes
         self.killEvent.set()
+        print("Kill Event Set")
 
         # Disarm
         self.__getSemaphore(override=True)
@@ -110,7 +113,7 @@ class mavlinkInterface(object):
         self.stopCurrentTask()
 
     def stopCurrentTask(self):  # TODO
-        # Kills the currently running task and stops the submarine
+        # Kills the currently running task and stops the drone
         pass
 
     # Active commands
@@ -134,7 +137,23 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
-    def dive(self, time, throttle, override=False):
+    def dive(self, depth, throttle=100, absolute=False, override=False):
+        '''
+        Move vertically by a certain distance, or to a specific altitude
+
+        :param depth: Distance to dive or rise. Deeper is negative
+        :param throttle: Percent throttle to use
+        :param absolute <optional>: When True, dives to the depth given relative to sea level
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.dive, args=(self, depth, throttle, absolute,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def diveTime(self, time, throttle, override=False):
         '''
         Thrust vertically for a specified amount of time
 
@@ -144,7 +163,7 @@ class mavlinkInterface(object):
         if not self.__getSemaphore(override):
             return
 
-        self.t = Thread(target=commands.active.dive, args=(self.mavlinkConnection, self.sem, time, throttle,))
+        self.t = Thread(target=commands.active.diveTime, args=(self.mavlinkConnection, self.sem, time, throttle,))
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
@@ -267,16 +286,21 @@ class mavlinkInterface(object):
         return self.t.join()
 
     def getPressureExternal(self):
-        '''Returns the external pressure as a float'''
-        self.t = RThread(target=commands.passive.getPressureExternal, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        ''' Returns the reading of the pressure sensor in Pascals '''
+        pressure_data = self.messages["SCALED_PRESSURE"]        # Get the Pressure data
+        return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
 
     def getDepth(self):
-        '''Returns the depth of the drone as a float'''
-        self.t = RThread(target=commands.passive.getDepth, args=(self.mavlinkConnection,))
-        self.t.start()
-        return self.t.join()
+        '''Returns the depth of the drone in meters as a float'''
+
+        # Get variable values from config
+        surfacePressure = int(self.config['geodata']['surfacePressure'])    # pascals
+        fluidDensity = int(self.config['geodata']['fluidDensity'])          # kg/m^3
+        g = 9.8066                                                          # m/s^2
+
+        # Calculate depth
+        depth = ((self.getPressureExternal() - surfacePressure) / (fluidDensity * g)) * -1
+        return round(depth, 2)    # Meters
 
     # Beta Commands
     def yawBeta(self, angle, rate=20, direction=1, relative=1, override=False):     # Broken
@@ -307,18 +331,31 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
-    def diveDepth(self, depth, throttle=100, absolute=False, override=False):
-        '''
-        Move vertically by a certain distance, or to a specific altitude
+    def updateMessage(self, killEvent):
+        '''This function automatically updates a variable to contain the contents of a mavlink message'''
+        log = getLogger("Refresh")  # Log that this was started
+        log.debug("dataRefresher Class Initiating.")
+        logMessages = ["SYS_STATUS", 'RAW_IMU', 'SCALED_PRESSURE', 'HEARTBEAT']
+        while not killEvent.is_set():   # When killEvent is set, stop looping
+            msg = None
+            msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
+            # Timeout used so it has the chance to notice the stop flag when no data is present
+            if msg:
+                self.messages[str(msg.get_type())] = msg
 
-        :param depth: Distance to dive or rise. Deeper is negative
-        :param throttle: Percent throttle to use
-        :param absolute <optional>: When True, dives to the depth given relative to sea level
-        '''
-        if not self.__getSemaphore(override):
-            return
+    def leakDetector(self, killEvent):
+        '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''
+        log = getLogger("Status")
+        log.debug("Leak Detector started")
+        while not killEvent.is_set():
+            statusText = None
+            statusText = self.mavlinkConnection.recv_match(type="STATUSTEXT", blocking=True, timeout=3)     # Receive a status message
+            if statusText:
+                log.info("Status Text Received: " + statusText.text)    # Write the message to the log
+                if "LEAK" in statusText.text.upper():                   # If there is a leak,
+                    log.error("Leak detected: " + statusText.text)      # Record it in the log,
+                    self.dive(0, absolute=True)   # Then run the appropriate response
 
-        self.t = Thread(target=commands.active.diveDepth, args=(self.mavlinkConnection, self.sem, depth, throttle, absolute,))
-        self.t.start()
-        if(not self.asynchronous):
-            self.t.join()
+            # Note the lack of a sleep statement here.
+            # Waiting is done by the blocking mode of the recv_match function
+        log.debug("StatusMonitor Stopping")
