@@ -133,13 +133,13 @@ def dive(mli, depth, throttle=100, absolute=False):
                     z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
                     0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being 1000 and clockwise being -1000, and the yaw of a vehicle]
                     0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
-                if i == 30:                                 # If, over the course 5 sec
+                if i == 12:                                 # If, over the course 3 sec
                     if -1 <= oldDepth - currentDepth <= 1:  # If depth has not changed
                         stuck = True                        # The drone must either be stuck or at the surface, but miscalibrated
                     i = 0
                     oldDepth = currentDepth
                 i += 1
-                sleep(0.1)
+                sleep(.25)
         # If the drone is below the desired depth
         elif currentDepth < targetDepth:
             z = (throttle * 5) + 500
@@ -152,13 +152,13 @@ def dive(mli, depth, throttle=100, absolute=False):
                     z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
                     0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being 1000 and clockwise being -1000, and the yaw of a vehicle]
                     0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
-                if i == 30:                                 # If, over the course 5 sec
+                if i == 12:                                 # If, over the course 3 sec
                     if -1 <= oldDepth - currentDepth <= 1:  # If depth has not changed
                         stuck = True                        # The drone must either be stuck or at the surface, but miscalibrated
                     i = 0
                     oldDepth = currentDepth
                 i += 1
-                # Sleep handled by blocking mode on getDepth
+                sleep(.25)
 
         # Stop thrusting when the desired depth has been reached
         mli.mavlinkConnection.mav.manual_control_send(
@@ -171,10 +171,10 @@ def dive(mli, depth, throttle=100, absolute=False):
     finally:
         mli.sem.release()
 
-def surface(ml, sem):  # TODO
+def surface(mli):  # TODO
     log = getLogger("Movement")
     log.info("Rising to Surface")
-    dive(ml, sem, 0, throttle=100, absolute=True)
+    dive(mli, 0, throttle=100, absolute=True)
 
 
 def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
