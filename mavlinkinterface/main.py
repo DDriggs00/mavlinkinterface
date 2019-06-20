@@ -54,12 +54,12 @@ class mavlinkInterface(object):
         self.killEvent = Event()
 
         # start statusMonitor
-        self.leakDetectorThread = Thread(target=self.leakDetector, args=(self.killEvent,))
+        self.leakDetectorThread = Thread(target=self.__leakDetector, args=(self.killEvent,))
         self.leakDetectorThread.daemon = True
         self.leakDetectorThread.start()
 
         # start dataRefreshers
-        self.refresher = Thread(target=self.updateMessage, args=(self.killEvent,))
+        self.refresher = Thread(target=self.__updateMessage, args=(self.killEvent,))
         self.refresher.daemon = True
         self.refresher.start()
         self.log.debug("__init__ end")
@@ -98,6 +98,35 @@ class mavlinkInterface(object):
                 return False    # The command needs not be executed
         return True     # If the semaphore was obtained on the first try
 
+    def __updateMessage(self, killEvent):
+        '''This function automatically updates a variable to contain the contents of a mavlink message'''
+        log = getLogger("Refresh")  # Log that this was started
+        log.debug("dataRefresher Class Initiating.")
+        logMessages = ["SYS_STATUS", 'RAW_IMU', 'SCALED_PRESSURE', 'HEARTBEAT']
+        while not killEvent.is_set():   # When killEvent is set, stop looping
+            msg = None
+            msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
+            # Timeout used so it has the chance to notice the stop flag when no data is present
+            if msg:
+                self.messages[str(msg.get_type())] = msg
+
+    def __leakDetector(self, killEvent):
+        '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''
+        log = getLogger("Status")
+        log.debug("Leak Detector started")
+        while not killEvent.is_set():
+            statusText = None
+            statusText = self.mavlinkConnection.recv_match(type="STATUSTEXT", blocking=True, timeout=3)     # Receive a status message
+            if statusText:
+                log.info("Status Text Received: " + statusText.text)    # Write the message to the log
+                if "LEAK" in statusText.text.upper():                   # If there is a leak,
+                    log.error("Leak detected: " + statusText.text)      # Record it in the log,
+                    self.dive(0, absolute=True)   # Then run the appropriate response
+
+            # Note the lack of a sleep statement here.
+            # Waiting is done by the blocking mode of the recv_match function
+        log.debug("StatusMonitor Stopping")
+
     # General commands
     def help(self):     # TODO
         print("Available functions:")
@@ -133,6 +162,55 @@ class mavlinkInterface(object):
             return
 
         self.t = Thread(target=commands.active.disarm, args=(self.mavlinkConnection, self.sem,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def setFlightMode(self, mode, override=False):
+        '''
+        Sets the flight mode of the drone.
+        Valid modes are listed in docs/active/setFlightMode.md
+
+        Parameter Mode: The mode to use
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.setFlightMode, args=(self.mavlinkConnection, self.sem, mode,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def move(self, direction, time, throttle=100, absolute=False, override=False):
+        '''
+        Move horizontally in any direction
+
+        Parameter Direction: the angle (in degrees) to move toward
+        Parameter time: the time (in seconds) to power the thrusters
+        Parameter throttle: the percentage of thruster power to use
+        Parameter Absolute: When true, an angle of 0 degrees is magnetic north
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.move, args=(self.mavlinkConnection, self.sem, direction, time, throttle,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def move3d(self, throttleX, throttleY, throttleZ, time, override=False):
+        '''
+        Move in any direction
+
+        Parameter Throttle X: Percent power to use when thrusting in the X direction
+        Parameter Throttle Y: Percent power to use when thrusting in the Y direction
+        Parameter Throttle Z: Percent power to use when thrusting in the Z direction
+        Parameter Time: The time (in seconds) to power the thrusters
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.move3d, args=(self.mavlinkConnection, self.sem, throttleX, throttleY, throttleZ, time,))
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
@@ -180,6 +258,19 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
+    def yaw(self, angle, override=False):
+        '''Rotates the drone around the Z-Axis
+
+        angle: distance to rotate in degrees
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.yaw, args=(self.mavlinkConnection, self.sem, angle,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
     def gripperOpen(self, override=False):
         '''
         Opens the Gripper Arm
@@ -200,68 +291,6 @@ class mavlinkInterface(object):
             return
 
         self.t = Thread(target=commands.active.gripperClose, args=(self.mavlinkConnection, self.sem,))
-        self.t.start()
-        if(not self.asynchronous):
-            self.t.join()
-
-    def yaw(self, angle, override=False):
-        '''Rotates the drone around the Z-Axis
-
-        angle: distance to rotate in degrees
-        '''
-        if not self.__getSemaphore(override):
-            return
-
-        self.t = Thread(target=commands.active.yaw, args=(self.mavlinkConnection, self.sem, angle,))
-        self.t.start()
-        if(not self.asynchronous):
-            self.t.join()
-
-    def move(self, direction, time, throttle=100, absolute=False, override=False):
-        '''
-        Move horizontally in any direction
-
-        Parameter Direction: the angle (in degrees) to move toward
-        Parameter time: the time (in seconds) to power the thrusters
-        Parameter throttle: the percentage of thruster power to use
-        Parameter Absolute: When true, an angle of 0 degrees is magnetic north
-        '''
-        if not self.__getSemaphore(override):
-            return
-
-        self.t = Thread(target=commands.active.move, args=(self.mavlinkConnection, self.sem, direction, time, throttle,))
-        self.t.start()
-        if(not self.asynchronous):
-            self.t.join()
-
-    def move3d(self, throttleX, throttleY, throttleZ, time, override=False):
-        '''
-        Move in any direction
-
-        Parameter Throttle X: Percent power to use when thrusting in the X direction
-        Parameter Throttle Y: Percent power to use when thrusting in the Y direction
-        Parameter Throttle Z: Percent power to use when thrusting in the Z direction
-        Parameter Time: The time (in seconds) to power the thrusters
-        '''
-        if not self.__getSemaphore(override):
-            return
-
-        self.t = Thread(target=commands.active.move3d, args=(self.mavlinkConnection, self.sem, throttleX, throttleY, throttleZ, time,))
-        self.t.start()
-        if(not self.asynchronous):
-            self.t.join()
-
-    def setFlightMode(self, mode, override=False):
-        '''
-        Sets the flight mode of the drone.
-        Valid modes are listed in docs/active/setFlightMode.md
-
-        Parameter Mode: The mode to use
-        '''
-        if not self.__getSemaphore(override):
-            return
-
-        self.t = Thread(target=commands.active.setFlightMode, args=(self.mavlinkConnection, self.sem, mode,))
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
@@ -353,31 +382,58 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
-    def updateMessage(self, killEvent):
-        '''This function automatically updates a variable to contain the contents of a mavlink message'''
-        log = getLogger("Refresh")  # Log that this was started
-        log.debug("dataRefresher Class Initiating.")
-        logMessages = ["SYS_STATUS", 'RAW_IMU', 'SCALED_PRESSURE', 'HEARTBEAT']
-        while not killEvent.is_set():   # When killEvent is set, stop looping
-            msg = None
-            msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
-            # Timeout used so it has the chance to notice the stop flag when no data is present
-            if msg:
-                self.messages[str(msg.get_type())] = msg
+    def lightsMax1(self, override=False):
+        '''
+        Turns the lights on
+        '''
+        if not self.__getSemaphore(override):
+            return
 
-    def leakDetector(self, killEvent):
-        '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''
-        log = getLogger("Status")
-        log.debug("Leak Detector started")
-        while not killEvent.is_set():
-            statusText = None
-            statusText = self.mavlinkConnection.recv_match(type="STATUSTEXT", blocking=True, timeout=3)     # Receive a status message
-            if statusText:
-                log.info("Status Text Received: " + statusText.text)    # Write the message to the log
-                if "LEAK" in statusText.text.upper():                   # If there is a leak,
-                    log.error("Leak detected: " + statusText.text)      # Record it in the log,
-                    self.dive(0, absolute=True)   # Then run the appropriate response
+        self.t = Thread(target=commands.active.lightsMax1, args=(self.mavlinkConnection, self.sem,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
 
-            # Note the lack of a sleep statement here.
-            # Waiting is done by the blocking mode of the recv_match function
-        log.debug("StatusMonitor Stopping")
+    def lightsOff1(self, override=False):
+        '''
+        Turns the lights on
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.lightsOff1, args=(self.mavlinkConnection, self.sem,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+    def wait(self, override=False):
+        ''' Pushes an input of zero so no action is taken. Resolution of .25 sec'''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.wait, args=(self.mavlinkConnection, self.sem,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
+        def setSurfacePressure(pressure=None):
+            '''Sets the surface pressure (used in depth calculations) to the given value.
+            If no value is given, uses the current external pressure of the drone
+
+            parameter pressure: The pressure in pascals to make default. Sea Level is 101325'''
+            if not pressure:
+                pressure = self.getPressureExternal()
+                self.log.info("Pressure not given, using current pressure of " + pressure)
+            else:
+                self.log.info("Setting surface pressure to " + pressure)
+
+            self.config.set('geodata', 'surfacePressure', pressure)
+
+        def setFluidDensity(density=1000):
+            '''Sets the fluid density (used in depth calculations) to the given value.
+            If no value is given, 1000, the density of fresh water
+
+            parameter density: The density of the liquid in which the drone is diving in kg/m^3. Freshwater is 1000, salt water is typically 1020-1030'''
+            self.log.info("Setting fluidDensity to " + density)
+
+            self.config.set('geodata', 'fluidDensity', density)
