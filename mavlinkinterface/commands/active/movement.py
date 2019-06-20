@@ -215,3 +215,20 @@ def yaw(ml, sem, angle, absolute=False):
 
     finally:
         sem.release()
+
+def wait(ml, sem, time):
+    try:
+        log = getLogger("Movement")
+        log.info("Waiting (with manual control set) for " + str(time) + " seconds")
+        for i in range(0, time * 4):
+            ml.mav.manual_control_send(
+                ml.target_system,
+                0,      # x [ forward(1000)-backward(-1000)]
+                0,      # y [ left(-1000)-right(1000) ]
+                500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle. ]
+                0,      # r [ 500 will turn the drone 90 degrees ]
+                0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1 ]
+            sleep(.25)
+
+    finally:
+        sem.release()
