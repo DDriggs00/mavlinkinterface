@@ -416,24 +416,24 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
-        def setSurfacePressure(pressure=None):
-            '''Sets the surface pressure (used in depth calculations) to the given value.
-            If no value is given, uses the current external pressure of the drone
+    def setSurfacePressure(self, pressure=None):
+        '''Sets the surface pressure (used in depth calculations) to the given value.
+        If no value is given, uses the current external pressure of the drone
 
-            parameter pressure: The pressure in pascals to make default. Sea Level is 101325'''
-            if not pressure:
-                pressure = self.getPressureExternal()
-                self.log.info("Pressure not given, using current pressure of " + pressure)
-            else:
-                self.log.info("Setting surface pressure to " + pressure)
+        parameter pressure: The pressure in pascals to make default. Sea Level is 101325'''
+        if not pressure:
+            pressure = self.getPressureExternal()
+            self.log.info("Pressure not given, using current pressure of " + pressure)
+        else:
+            self.log.info("Setting surface pressure to " + pressure)
 
-            self.config.set('geodata', 'surfacePressure', pressure)
+        self.config.set('geodata', 'surfacePressure', pressure)
 
-        def setFluidDensity(density=1000):
-            '''Sets the fluid density (used in depth calculations) to the given value.
-            If no value is given, 1000, the density of fresh water
+    def setFluidDensity(self, density=1000):
+        '''Sets the fluid density (used in depth calculations) to the given value.
+        If no value is given, 1000, the density of fresh water
 
-            parameter density: The density of the liquid in which the drone is diving in kg/m^3. Freshwater is 1000, salt water is typically 1020-1030'''
-            self.log.info("Setting fluidDensity to " + density)
+        parameter density: The density of the liquid in which the drone is diving in kg/m^3. Freshwater is 1000, salt water is typically 1020-1030'''
+        self.log.info("Setting fluidDensity to " + density)
 
-            self.config.set('geodata', 'fluidDensity', density)
+        self.config.set('geodata', 'fluidDensity', density)
