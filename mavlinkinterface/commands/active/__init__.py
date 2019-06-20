@@ -1,14 +1,14 @@
 # Import all functions
-from mavlinkinterface.commands.active.lights import setLights
 from mavlinkinterface.commands.active.flightModes import setFlightMode
 from mavlinkinterface.commands.active.arm_disarm import arm, disarm
+from mavlinkinterface.commands.active.gripper import gripperClose, gripperOpen
+from mavlinkinterface.commands.active.lights import lightsUp, lightsDown
 from mavlinkinterface.commands.active.movement import move, move3d, dive, diveTime, yaw, yawBeta, surface, wait
-from mavlinkinterface.commands.active.beta_commands import changeAltitude, lightsMax1, lightsoff1, gripperClose, gripperOpen, lightsUp, lightsDown
+from mavlinkinterface.commands.active.beta_commands import changeAltitude
 
 __all__ = [
     "arm",
     "disarm",
-    "setLights",
     "setFlightMode",
     "move",
     "move3d",
@@ -19,8 +19,6 @@ __all__ = [
     "surface",
     "wait",
     "changeAltitude",
-    "lightsMax1",
-    "lightsoff1",
     "diveDepth",
     "lightsUp",
     "lightsDown",
