@@ -1,11 +1,16 @@
 # Regular Imports
 from pymavlink import mavutil           # For pretty much everything
-from threading import Thread, Event     # For pretty much everything
+from threading import Thread            # For pretty much everything
+from threading import Event             # For killing threads
 from threading import Semaphore         # To prevent multiple movement commands at once
 # from queue import Queue                 # For queuing mode
-# import platform                         # For choosing log location
-from configparser import ConfigParser   # For configuration details
-import json                             # For returning JSON
+import json                             # For returning JSON-formatted strings
+from time import sleep                  # For waiting for heartbeat message validation
+from datetime import datetime           # For Initial log comment
+from configparser import ConfigParser   # For config file management
+from os.path import abspath             # For config file management
+from os.path import expanduser          # for config file management
+from os.path import exists              # For checking if config file exists
 
 # Local Imports
 from mavlinkinterface.logger import getLogger               # For Logging
@@ -24,13 +29,29 @@ class mavlinkInterface(object):
         :param queueMode: See docs/configuration/setDefaultQueueMode for details.\n
         :param asynchronous: When false or not given, movement commands will return once the movement is done.  When true, movement commands will return immediately and execute in the background.
         '''
+
         # Initialize logger
         self.log = getLogger("Main", doPrint=True)
+        self.log.debug("################################################################################")
+        self.log.debug("###################### New Log " + str(datetime.now()) + " ######################")
+        self.log.debug("################################################################################")
 
         # Import config values
-        self.log.debug("importing configuration file")
         self.config = ConfigParser()
-        self.config.read("mavlinkinterface/config.cfg")
+        self.configPath = abspath(expanduser("~/.mavlinkInterface.ini"))
+        if exists(self.configPath):
+            self.log.debug("importing configuration file from path: " + self.configPath)
+            self.config.read(self.configPath)
+        else:   # Config file does not exist
+            # Populate file with Default config options
+            self.config['mavlink'] = {'connection_ip': '0.0.0.0',
+                                      'connection_port': '14550'}
+            self.config['geodata'] = {'REM_1': 'The pressure in pascals at the surface of the body of water. Sea Level is around 101325. Varies day by day',
+                                      'surfacePressure': '101325',
+                                      'REM_2': 'The density of the diving medium. Pure water is 1000, salt water is typically 1020-1030',
+                                      'fluidDensity': '1000'}
+            # Save file
+            self.config.write((open(self.configPath, 'w')))
 
         # Set class variables
         self.log.debug("Setting class variables")
@@ -48,7 +69,6 @@ class mavlinkInterface(object):
         connectionString = 'udp:' + self.config['mavlink']['connection_ip'] + ':' + self.config['mavlink']['connection_port']
         self.mavlinkConnection = mavutil.mavlink_connection(connectionString)
         self.mavlinkConnection.wait_heartbeat()
-        self.log.info("Successfully connected to target.")
 
         # Building Kill Event
         self.killEvent = Event()
@@ -62,6 +82,15 @@ class mavlinkInterface(object):
         self.refresher = Thread(target=self.__updateMessage, args=(self.killEvent,))
         self.refresher.daemon = True
         self.refresher.start()
+
+        # Initiate light class
+        self.lights = commands.active.lights()
+
+        # Validating heartbeat
+        self.log.info("Waiting for heartbeat")
+        while not self.messages.__contains__('HEARTBEAT'):
+            sleep(.1)
+        self.log.info("Successfully connected to target.")
         self.log.debug("__init__ end")
 
     def __del__(self):
@@ -76,6 +105,7 @@ class mavlinkInterface(object):
         # Disarm
         self.__getSemaphore(override=True)
         commands.active.disarm(self.mavlinkConnection, self.sem)
+        print("disarmed")
 
     # Private functions
     def __getSemaphore(self, override):     # contains TODO
@@ -87,7 +117,9 @@ class mavlinkInterface(object):
                     # TODO Empty queue
                     pass
                 self.stopCurrentTask()  # Will release semaphore
-                self.sem.acquire()
+                if not self.sem.acquire(blocking=False):    # If the current task did not properly release the semaphore
+                    self.sem.release()                      # Release it
+                    self.sem.acquire()                      # Then re-take it
                 return True     # Now that previous action has been killed, execute current action
             elif self.queueMode == queueModes.ignore:
                 self.log.info("Using Ignore mode, command ignored")
@@ -105,7 +137,11 @@ class mavlinkInterface(object):
         logMessages = ["SYS_STATUS", 'RAW_IMU', 'SCALED_PRESSURE', 'HEARTBEAT']
         while not killEvent.is_set():   # When killEvent is set, stop looping
             msg = None
-            msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
+            try:
+                msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
+            except:
+                self.log.exception('')
+                raise   # TODO figure out which exception is periodically showing up
             # Timeout used so it has the chance to notice the stop flag when no data is present
             if msg:
                 self.messages[str(msg.get_type())] = msg
@@ -353,6 +389,41 @@ class mavlinkInterface(object):
         depth = ((self.getPressureExternal() - surfacePressure) / (fluidDensity * g)) * -1
         return round(depth, 2)    # Meters
 
+    # Configuration Commands
+    def setSurfacePressure(self, pressure=None):
+        '''
+        Sets the surface pressure (used in depth calculations) to the given value.
+        If no value is given, uses the current external pressure of the drone
+
+        parameter pressure: The pressure in pascals to make default. Sea Level is 101325
+        '''
+        if not pressure:
+            pressure = self.getPressureExternal()
+            self.log.info("Pressure not given, using current pressure of " + str(pressure) + ". Was " + str(self.config['geodata']['surfacePressure']))
+        else:
+            self.log.info("Setting surface pressure to " + str(pressure) + ". Was " + str(self.config['geodata']['surfacePressure']))
+
+        pressure = round(pressure)  # Round to nearest int
+
+        self.config.set('geodata', 'surfacePressure', str(pressure))
+        # Write value to configFile
+        with open(self.configPath, 'w') as configFile:
+            self.config.write(configFile)
+
+    def setFluidDensity(self, density=1000):
+        '''
+        Sets the fluid density (used in depth calculations) to the given value.
+        If no value is given, 1000, the density of fresh water
+
+        parameter density: The density of the liquid in which the drone is diving in kg/m^3. Freshwater is 1000, salt water is typically 1020-1030
+        '''
+        self.log.info("Setting fluidDensity to " + str(density) + ". Was " + str(self.config['geodata']['fluidDensity']))
+
+        self.config.set('geodata', 'fluidDensity', str(density))
+        # Write value to configFile
+        with open(self.configPath, 'w') as configFile:
+            self.config.write(configFile)
+
     # Beta Commands
     def yawBeta(self, angle, rate=20, direction=1, relative=1, override=False):     # Broken
         '''Rotates the drone around the Z-Axis
@@ -382,58 +453,30 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
-    def lightsMax1(self, override=False):
+    def setLights(self, brightness, override=False):
         '''
-        Turns the lights on
-        '''
-        if not self.__getSemaphore(override):
-            return
+        Set the lights of the drone to a certain level
 
-        self.t = Thread(target=commands.active.lightsMax1, args=(self.mavlinkConnection, self.sem,))
-        self.t.start()
-        if(not self.asynchronous):
-            self.t.join()
-
-    def lightsOff1(self, override=False):
-        '''
-        Turns the lights on
+        param brightness: the percentage of full brightness (rounded to the nearest step) to set the lights to
         '''
         if not self.__getSemaphore(override):
             return
 
-        self.t = Thread(target=commands.active.lightsOff1, args=(self.mavlinkConnection, self.sem,))
+        self.t = Thread(target=self.lights.set, args=(self.mavlinkConnection, self.sem, brightness,))
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
 
-    def wait(self, override=False):
-        ''' Pushes an input of zero so no action is taken. Resolution of .25 sec'''
+    def wait(self, time, override=False):
+        '''
+        Pushes an input of zero so no action is taken. Possibly necessary when sleeping for more than 1 second
+
+        param time: an integer representing the number of seconds to wait
+        '''
         if not self.__getSemaphore(override):
             return
 
-        self.t = Thread(target=commands.active.wait, args=(self.mavlinkConnection, self.sem,))
+        self.t = Thread(target=commands.active.wait, args=(self.mavlinkConnection, self.sem, time,))
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
-
-    def setSurfacePressure(self, pressure=None):
-        '''Sets the surface pressure (used in depth calculations) to the given value.
-        If no value is given, uses the current external pressure of the drone
-
-        parameter pressure: The pressure in pascals to make default. Sea Level is 101325'''
-        if not pressure:
-            pressure = self.getPressureExternal()
-            self.log.info("Pressure not given, using current pressure of " + pressure)
-        else:
-            self.log.info("Setting surface pressure to " + pressure)
-
-        self.config.set('geodata', 'surfacePressure', pressure)
-
-    def setFluidDensity(self, density=1000):
-        '''Sets the fluid density (used in depth calculations) to the given value.
-        If no value is given, 1000, the density of fresh water
-
-        parameter density: The density of the liquid in which the drone is diving in kg/m^3. Freshwater is 1000, salt water is typically 1020-1030'''
-        self.log.info("Setting fluidDensity to " + density)
-
-        self.config.set('geodata', 'fluidDensity', density)

@@ -1,5 +1,8 @@
-import logging
-from datetime import date
+import logging                  # The logger
+from datetime import date       # For naming log by date
+from os.path import abspath     # For setting path based
+from os.path import expanduser  # For setting path based
+from os import makedirs         # For setting path based
 
 def getLogger(name, fileName=None, doPrint=False, basic=False):
     if basic:
@@ -8,18 +11,20 @@ def getLogger(name, fileName=None, doPrint=False, basic=False):
         logFormat = '%(asctime)s, %(name)8s, %(levelname)5s, %(message)s'
 
     if fileName:
-        logFileName = fileName
+        logPath = abspath(expanduser("~/logs/mavlinkInterface/"))
     else:
-        logFileName = ('log_' + str(date.today()) + '.log')
-
+        fileName = ('log_' + str(date.today()) + '.log')
+        logPath = abspath(expanduser("~/logs/mavlinkInterface/"))
+    makedirs(logPath, exist_ok=True)    # Make the directory path if not exists
     logging.basicConfig(level=logging.DEBUG,
                         format=logFormat,
-                        filename=logFileName,
-                        filemode='w')
+                        filename=logPath + '/' + fileName,
+                        filemode='a+')
     if doPrint:
         consoleFormat = '%(message)s'
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
         console.setFormatter(logging.Formatter(consoleFormat))
         logging.getLogger(name).addHandler(console)
+        logging.getLogger(name).optionxform = str
     return logging.getLogger(name)
