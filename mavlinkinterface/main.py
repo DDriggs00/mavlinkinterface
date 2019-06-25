@@ -11,12 +11,14 @@ from configparser import ConfigParser   # For config file management
 from os.path import abspath             # For config file management
 from os.path import expanduser          # for config file management
 from os.path import exists              # For checking if config file exists
+from pymavlink.mavextra import mag_heading  # For calculating heading
 
 # Local Imports
 from mavlinkinterface.logger import getLogger               # For Logging
 import mavlinkinterface.commands as commands                # For calling commands
 # from mavlinkinterface.rthread import RThread                # For functions that have return values
 from mavlinkinterface.enum.queueModes import queueModes     # For use in async mode
+
 
 class mavlinkInterface(object):
     '''
@@ -26,6 +28,7 @@ class mavlinkInterface(object):
     def __init__(self, queueMode=queueModes.override, asynchronous=False):
         '''
         Creates a new mavlinkInterface Object
+
         :param queueMode: See docs/configuration/setDefaultQueueMode for details.\n
         :param asynchronous: When false or not given, movement commands will return once the movement is done.  When true, movement commands will return immediately and execute in the background.
         '''
@@ -46,10 +49,11 @@ class mavlinkInterface(object):
             # Populate file with Default config options
             self.config['mavlink'] = {'connection_ip': '0.0.0.0',
                                       'connection_port': '14550'}
-            self.config['geodata'] = {'REM_1': 'The pressure in pascals at the surface of the body of water. Sea Level is around 101325. Varies day by day',
+            self.config['geodata'] = {'COMMENT_1': 'The pressure in pascals at the surface of the body of water. Sea Level is around 101325. Varies day by day',
                                       'surfacePressure': '101325',
-                                      'REM_2': 'The density of the diving medium. Pure water is 1000, salt water is typically 1020-1030',
+                                      'COMMENT_2': 'The density of the diving medium. Pure water is 1000, salt water is typically 1020-1030',
                                       'fluidDensity': '1000'}
+            self.config['messages'] = {'pressureSensorExternal': 'SCALED_PRESSURE2'}
             # Save file
             self.config.write((open(self.configPath, 'w')))
 
@@ -68,20 +72,31 @@ class mavlinkInterface(object):
         self.log.debug("Initializing MavLink Connection")
         connectionString = 'udp:' + self.config['mavlink']['connection_ip'] + ':' + self.config['mavlink']['connection_port']
         self.mavlinkConnection = mavutil.mavlink_connection(connectionString)
-        self.mavlinkConnection.wait_heartbeat()
+        self.mavlinkConnection.wait_heartbeat()                 # Start Heartbeat
+        self.mavlinkConnection.mav.request_data_stream_send(    # Request start of message stream
+            self.mavlinkConnection.target_system,
+            self.mavlinkConnection.target_component,
+            mavutil.mavlink.MAV_DATA_STREAM_ALL,
+            0x5,
+            1)
 
         # Building Kill Event
-        self.killEvent = Event()
-
-        # start statusMonitor
-        self.leakDetectorThread = Thread(target=self.__leakDetector, args=(self.killEvent,))
-        self.leakDetectorThread.daemon = True
-        self.leakDetectorThread.start()
+        self.killEvent = Event()    # When set, will signal all attached tasks to stop
 
         # start dataRefreshers
         self.refresher = Thread(target=self.__updateMessage, args=(self.killEvent,))
-        self.refresher.daemon = True
+        self.refresher.daemon = True    # Kill on program end
         self.refresher.start()
+
+        # start heartbeat maintainer
+        self.heartbeatThread = Thread(target=self.__heartbeatMaintain, args=(self.killEvent,))
+        self.heartbeatThread.daemon = True  # Kill on program end
+        self.heartbeatThread.start()
+
+        # start leak detection
+        self.leakDetectorThread = Thread(target=self.__leakDetector, args=(self.killEvent,))
+        self.leakDetectorThread.daemon = True   # Kill on program end
+        self.leakDetectorThread.start()
 
         # Initiate light class
         self.lights = commands.active.lights()
@@ -134,34 +149,61 @@ class mavlinkInterface(object):
         '''This function automatically updates a variable to contain the contents of a mavlink message'''
         log = getLogger("Refresh")  # Log that this was started
         log.debug("dataRefresher Class Initiating.")
-        logMessages = ["SYS_STATUS", 'RAW_IMU', 'SCALED_PRESSURE', 'HEARTBEAT']
+        logMessages = ["SYS_STATUS", 'RAW_IMU', self.config['messages']['pressureSensorExternal'], 'HEARTBEAT', 'ATTITUDE', "STATUSTEXT"]
         while not killEvent.is_set():   # When killEvent is set, stop looping
             msg = None
-            try:
-                msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
-            except:
-                self.log.exception('')
-                raise   # TODO figure out which exception is periodically showing up
+            # try:
+            msg = self.mavlinkConnection.recv_match(type=logMessages, blocking=True, timeout=1)
+            # except:
+            #     self.log.exception('')
+            #     raise   # TODO figure out which exception is periodically showing up
             # Timeout used so it has the chance to notice the stop flag when no data is present
             if msg:
                 self.messages[str(msg.get_type())] = msg
 
     def __leakDetector(self, killEvent):
         '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''
-        log = getLogger("Status")
+        log = getLogger("Status", doPrint=True)
         log.debug("Leak Detector started")
-        while not killEvent.is_set():
-            statusText = None
-            statusText = self.mavlinkConnection.recv_match(type="STATUSTEXT", blocking=True, timeout=3)     # Receive a status message
-            if statusText:
-                log.info("Status Text Received: " + statusText.text)    # Write the message to the log
-                if "LEAK" in statusText.text.upper():                   # If there is a leak,
-                    log.error("Leak detected: " + statusText.text)      # Record it in the log,
-                    self.dive(0, absolute=True)   # Then run the appropriate response
+        while not killEvent.wait(timeout=1):
+            if 'STATUSTEXT' in self.messages and 'LEAK' in str(self.messages['STATUSTEXT']).upper():
+                log.error("Leak Detected: " + self.messages['STATUSTEXT'])    # Write the message to the log
+                self.dive(0, absolute=True)   # Then run the appropriate response
 
-            # Note the lack of a sleep statement here.
-            # Waiting is done by the blocking mode of the recv_match function
         log.debug("StatusMonitor Stopping")
+
+    def __heartbeatSend(self, type=6, autopilot=8, base_mode=192, custom_mode=0, system_status=4, mavlink_version=3, force_mavlink1=False):
+        '''
+        The heartbeat message shows that a system is present and responding.
+        The type of the MAV and Autopilot hardware allow the
+        receiving system to treat further messages from this
+        system appropriate (e.g. by laying out the user
+        interface based on the autopilot).
+        https://mavlink.io/en/messages/common.html#HEARTBEAT
+
+        type                : Type of the MAV (quadrotor, helicopter, etc.) (type:uint8_t, values:MAV_TYPE) https://mavlink.io/en/messages/common.html#MAV_TYPE
+        autopilot           : Autopilot type / class. (type:uint8_t, values:MAV_AUTOPILOT) https://mavlink.io/en/messages/common.html#MAV_AUTOPILOT
+        base_mode           : System mode bitmap. (type:uint8_t, values:MAV_MODE_FLAG) https://mavlink.io/en/messages/common.html#MAV_MODE_FLAG
+        custom_mode         : A bitfield for use for autopilot-specific flags (type:uint32_t)
+        system_status       : System status flag. (type:uint8_t, values:MAV_STATE) https://mavlink.io/en/messages/common.html#MAV_STATE
+        mavlink_version     : MAVLink version, not writable by user, gets added by protocol because of magic data type: uint8_t_mavlink_version (type:uint8_t)
+
+        According to https://discuss.bluerobotics.com/t/sending-mavproxy-messages-from-a-python-program/1515/2,
+        "The values of these heartbeat fields is not really important here, I just used the same numbers that QGC uses"
+        '''
+        self.mavlinkConnection.mav.heartbeat_send(
+            type,               # type
+            autopilot,          # autopilot
+            base_mode,          # base_mode
+            custom_mode,        # custom_mode
+            system_status,      # system_status
+            mavlink_version)    # mavlink_version
+
+    def __heartbeatMaintain(self, killEvent):
+        self.log.debug("Heartbeat broadcast started")
+        while not killEvent.wait(timeout=1):
+            self.__heartbeatSend()
+        self.log.debug("Heartbeat broadcast stopped")
 
     # General commands
     def help(self):     # TODO
@@ -307,6 +349,19 @@ class mavlinkInterface(object):
         if(not self.asynchronous):
             self.t.join()
 
+    def yaw2(self, angle, absolute=False, override=False):
+        '''Rotates the drone around the Z-Axis
+
+        angle: distance to rotate in degrees
+        '''
+        if not self.__getSemaphore(override):
+            return
+
+        self.t = Thread(target=commands.active.yaw2, args=(self, angle, absolute,))
+        self.t.start()
+        if(not self.asynchronous):
+            self.t.join()
+
     def gripperOpen(self, override=False):
         '''
         Opens the Gripper Arm
@@ -334,6 +389,13 @@ class mavlinkInterface(object):
     # Sensor reading commands
     def getBatteryData(self):
         '''Returns a JSON-formatted string containing battery data'''
+        self.log.debug("Fetching battery data")
+
+        # Check message availability
+        if not self.messages.__contains__('SYS_STATUS'):
+            self.log.warn("SYS_STATUS message not available, waiting 1 sec")
+            sleep(1)
+
         data = {}
         data['voltage'] = self.messages['SYS_STATUS'].voltage_battery / 1000        # convert to volts
         data['current'] = self.messages['SYS_STATUS'].current_battery
@@ -342,6 +404,13 @@ class mavlinkInterface(object):
 
     def getAccelerometerData(self):
         '''Returns a JSON containing Accelerometer Data'''
+        self.log.debug("Fetching Accelerometer Data")
+
+        # Checking message availability
+        if not self.messages.__contains__('RAW_IMU'):
+            self.log.warn("RAW_IMU message not available, waiting 1 sec")
+            sleep(1)
+
         data = {}
         data['X'] = self.messages['RAW_IMU'].xacc
         data['Y'] = self.messages['RAW_IMU'].yacc
@@ -350,6 +419,13 @@ class mavlinkInterface(object):
 
     def getGyroscopeData(self):
         '''Returns a JSON containing Gyroscope Data'''
+        self.log.debug("Fetching Gyro Data")
+
+        # Checking message availability
+        if not self.messages.__contains__('RAW_IMU'):
+            self.log.warn("RAW_IMU message not available, waiting 1 sec")
+            sleep(1)
+
         data = {}
         data['X'] = self.messages['RAW_IMU'].xgyro
         data['Y'] = self.messages['RAW_IMU'].ygyro
@@ -358,6 +434,11 @@ class mavlinkInterface(object):
 
     def getMagnetometerData(self):
         '''Returns a JSON containing Magnetometer Data'''
+        self.log.debug("Fetching magnetometer Data")
+        if not self.messages.__contains__('RAW_IMU'):
+            self.log.warn("RAW_IMU message not available, waiting 1 sec")
+            sleep(1)
+
         data = {}
         data['X'] = self.messages['RAW_IMU'].xmag
         data['Y'] = self.messages['RAW_IMU'].ymag
@@ -366,6 +447,8 @@ class mavlinkInterface(object):
 
     def getIMUData(self):
         '''Returns a JSON containing IMU Data'''
+        self.log.debug("Fetching IMU Data")
+
         data = {}
         data["Magnetometer"] = json.loads(self.getMagnetometerData())
         data["Accelerometer"] = json.loads(self.getAccelerometerData())
@@ -374,11 +457,21 @@ class mavlinkInterface(object):
 
     def getPressureExternal(self):
         ''' Returns the reading of the pressure sensor in Pascals '''
-        pressure_data = self.messages["SCALED_PRESSURE"]        # Get the Pressure data
+
+        self.log.debug("Fetching External Pressure")
+
+        # Check message availability
+        if not self.config['messages']['pressureSensorExternal'] in self.messages:
+            self.log.warn("Scaled Pressure message not available, check if config value is correct (may just be delay). Waiting 1 second before retry")
+            sleep(1)
+
+        pressure_data = self.messages[self.config['messages']['pressureSensorExternal']]        # Get the Pressure data
+        self.log.debug(round(100 * float(pressure_data.press_abs), 2))
         return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
 
     def getDepth(self):
         '''Returns the depth of the drone in meters as a float'''
+        self.log.debug("Fetching Depth")
 
         # Get variable values from config
         surfacePressure = int(self.config['geodata']['surfacePressure'])    # pascals
@@ -387,6 +480,7 @@ class mavlinkInterface(object):
 
         # Calculate depth
         depth = ((self.getPressureExternal() - surfacePressure) / (fluidDensity * g)) * -1
+        self.log.debug("Depth = " + str(depth))
         return round(depth, 2)    # Meters
 
     # Configuration Commands
@@ -480,3 +574,7 @@ class mavlinkInterface(object):
         self.t.start()
         if(not self.asynchronous):
             self.t.join()
+
+    def getHeading(self):
+        # mag_heading found in pymavlink.mavextra
+        return mag_heading(self.messages['RAW_IMU'], self.messages['ATTITUDE'])
