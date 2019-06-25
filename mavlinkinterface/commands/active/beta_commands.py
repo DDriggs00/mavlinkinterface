@@ -1,5 +1,8 @@
 # from ctypes import c_uint16
-from pymavlink import mavutil
+# from pymavlink import mavutil
+# from mavlinkinterface.logger import getLogger
+# from pymavlink import mavextra
+# from time import sleep
 
 # def setAttitude(ml, sem, roll, pitch, yaw, rollSpeed=30, pitchSpeed=30, yawSpeed=30):
 #     try:
@@ -17,26 +20,6 @@ from pymavlink import mavutil
 #             0)  # param7: Meaningless
 #     finally:
 #         sem.release()
-
-
-def changeAltitude(ml, sem, rate, altitude):
-    try:
-        print("Moving to altitude " + str(altitude) + " at " + str(rate) + " m/s.")
-
-        ml.mav.command_long_send(
-            ml.target_system,
-            ml.target_component,
-            mavutil.mavlink.MAV_CMD_CONDITION_CHANGE_ALT,
-            0,  # Confirmation
-            rate,  # param1: ascent/descent rate (m/s)
-            0,  # param2: Empty
-            0,  # param3: Empty
-            0,  # param4: Empty
-            0,  # param5: Empty
-            0,  # param6: Empty
-            altitude)  # param7: Finish Altitude
-    finally:
-        sem.release()
 
 # def changeAltitude(ml, sem, rate, altitude):
 #     try:

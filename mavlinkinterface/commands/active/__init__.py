@@ -4,7 +4,7 @@ from mavlinkinterface.commands.active.arm_disarm import arm, disarm
 from mavlinkinterface.commands.active.gripper import gripperClose, gripperOpen
 from mavlinkinterface.commands.active.lights import lights
 from mavlinkinterface.commands.active.movement import move, move3d, dive, diveTime, yaw, yawBeta, surface, wait
-from mavlinkinterface.commands.active.beta_commands import changeAltitude
+# from mavlinkinterface.commands.active.beta_commands import
 
 __all__ = [
     "arm",
@@ -18,7 +18,6 @@ __all__ = [
     "diveTime",
     "surface",
     "wait",
-    "changeAltitude",
     "diveDepth",
     "lights",
     "gripperClose",
