@@ -1,73 +1,33 @@
-# Import interface
-import mavlinkinterface
-from pymavlink import mavutil
+# Startup steps
 
-# Create interface object
-MLI = mavlinkinterface.mavlinkInterface()
+import mavlinkinterface                     # Import Interface
+mli = mavlinkinterface.mavlinkInterface()   # Create interface object
+mli.arm()                                   # Arm the drone
 
-# Arm the drone
-MLI.arm()
+# Test groups
 
-# Function test group 1
-MLI.setLightsMax()
-MLI.move(0, 3, 100)
-MLI.dive(5, -100)
-MLI.setFlightMode("ALT_HOLD")
-MLI.diveDepth(10, absolute=False)
-# Strafing square
-MLI.move(0, 5, 50)
-MLI.move(270, 5, 100)
-MLI.move(180, 5, 50)
-MLI.move(90, 5, 100)
-MLI.yaw(90)
+# Test Group 0: set surface pressure
+mli.setSurfacePressure()
 
-MLI.getDepth()
-MLI.getPressureExternal()
-MLI.dive(1, 100)
-MLI.mavlinkConnection.motors_armed()  # Looks broken
-MLI.mavlinkConnection.uptime
+# Test group 2: lights test 2 - steps using controller emulation
+mli.setLights(100)
+mli.wait(1)
+mli.setLights(100)
 
-test = MLI.mavlinkConnection.recv_msg()
-test.get_type()
-test.get_fieldnames()
-MLI.setFlightMode("MANUAL")
-MLI.setFlightMode("ALT_HOLD")
-MLI.setFlightMode("STABILIZE")
+# Test Group 3: surface and ALT_HOLD - Deep end
+mli.move(0, 3)
+mli.dive(-1.75)    # Deep end is 2m deep
+mli.setFlightMode("ALT_HOLD")
+mli.wait(15)
+mli.setFlightMode("MANUAL")
+mli.surface()
 
+# Test group 4: Yaw
+mli.yaw2(90)
+mli.wait(3)
+mli.yaw2(-90)
+mli.wait(3)
 
-MLI.changeAltitude(1, -1)
-test1 = MLI.mavlinkConnection.recv_msg()
-test_pressure = MLI.mavlinkConnection.recv_match(type="SCALED_PRESSURE")
-test_IMU = MLI.mavlinkConnection.recv_match(type="SCALED_IMU")
-test_text = MLI.mavlinkConnection.recv_match(type="STATUSTEXT")
-test_text.text.upper()
+# Finishing steps
 
-test2 = MLI.mavlinkConnection.recv_match(type="HEARTBEAT")
-mavutil.mavlink.enums['MAV_TYPE'][test2.type].name
-mavutil.mavlink.enums['MAV_AUTOPILOT'][test2.autopilot].name
-mode = test2.base_mode
-is128 = is64 = is32 = is16 = is8 = is4 = is2 = is1 = False
-if mode >= 128:
-    mode -= 128
-    is128 = True
-if mode >= 64:
-    mode -= 64
-    is64 = True
-if mode >= 32:
-    mode -= 32
-    is32 = True
-if mode >= 16:
-    mode -= 16
-    is16 = True
-if mode >= 8:
-    mode -= 8
-    is8 = True
-if mode >= 4:
-    mode -= 4
-    is4 = True
-if mode >= 2:
-    mode -= 2
-    is2 = True
-if mode >= 1:
-    mode -= 1
-    is1 = True
+mli.disarm()    # Disarm the drone
