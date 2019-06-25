@@ -13,7 +13,7 @@ degrees (integer)
 
 Returns a string.  
 Upon completing the desired rotations, returns "Success"  
-If the action could not be completed (eg. Obstruction, overridden), returns the reason for failure and the new bearing
+If the action could not be completed (eg. Obstruction, overridden), returns the reason for failure and the new heading
 
 ## Examples
 

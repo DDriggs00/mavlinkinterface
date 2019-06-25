@@ -21,7 +21,7 @@ Returns all data from every currently-attached sensor
         "currentDraw":1.2,
         "percentRemaining":72.5
     },
-    "Bearing":270,
+    "Heading":270,
     "Depth": 2.6,
     "Gyroscope": {
         "Axis-1":90,
