@@ -2,15 +2,24 @@
 
 ## Features
 
+- Written in Python 3
 - Full Logging of some or all sensor data (configurable)
-- All functions return either:
-    1. a single variable
+- All returning functions return either:
+    1. a single variable, or
     2. A JSON-formatted string
-- All physical commands have blocking, queueing, and regular modes, as well as  an override system
-- Movement Commands can detect blockage
-- All sensor info accessible individually or at once
+- Multiple methods for handling sequential commands
+  - Synchronous: Action commands will return only when completed.
+  - Override: Any newer action commands will override and prior commands.
+  - Queue: Any newer action commands will be added to a queue behind existing commands.
+  - Ignore: Any newer action commands will be ignored if another action command is executing
+- All sensor info accessible
+  - Per sensor
+  - Per sensor module
+  - Together
+- Easily switch between flight modes
 
-Add modes
+## TODO
+
 make surface override depth holding mode
 "override" disables depth hold mode
 add terrain-following mode once amanda makes one
@@ -40,7 +49,7 @@ B: A Basic version has been Implemented
 - [move3d( throttleX, throttleY, throttleZ, time )](docs/Active/move3d.md)
 - [setFlightMode( mode )](docs/Active/setFlightMode.md)
 - X [setLights( brightness )](docs/Active/setLights.md)
-- X [surface()](docs/Active/surface.md)
+- [surface()](docs/Active/surface.md)
 - B [yaw( degrees )](docs/Active/yaw.md)
 
 ## Passive functions
@@ -51,13 +60,13 @@ B: A Basic version has been Implemented
 - X [cameraPhoto( resolution \<optional>, zoom \<optional>, )](docs/Passive/cameraPhoto.md)
 - [getAccelerometerData()](docs/Passive/getAccelerometerData.md)
 - [getBatteryData()](docs/Passive/getBatteryData.md)
-- X [getBearing()](docs/Passive/getBearing.md)
-- X [getDepth()](docs/Passive/getDepth.md)
-- X [getGyroscopeData()](docs/Passive/getGyroscopeData.md)
+- X [getHeading()](docs/Passive/getHeading.md)
+- [getDepth()](docs/Passive/getDepth.md)
+- [getGyroscopeData()](docs/Passive/getGyroscopeData.md)
 - X [getLeakData()](docs/Passive/getLeakData.md)
-- X [getMagnetometerData()](docs/Passive/getMagnetometerData.md)
-- X [getPressureExternal()](docs/Passive/getPressureExternal.md)
-- X [getPressureInternal()](docs/Passive/getPressureInternal.md)
+- [getMagnetometerData()](docs/Passive/getMagnetometerData.md)
+- [getPressureExternal()](docs/Passive/getPressureExternal.md)
+- [getPressureInternal()](docs/Passive/getPressureInternal.md)
 - X [getTemperature()](docs/Passive/getTemperature.md)
 - X [getAllSensorData()](docs/Passive/getAllSensorData.md)
 
