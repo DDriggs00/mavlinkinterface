@@ -3,14 +3,18 @@ import mavlinkinterface
 MLI = mavlinkinterface.mavlinkInterface()
 MLI.arm()
 
+MLI.move(0, 3)
+
 print(MLI.getDepth())
 print(MLI.getPressureExternal())
-MLI.dive(-0.5, 10)
-MLI.setFlightMode("ALT_HOLD")
+MLI.dive(-1, 50)
+MLI.setFlightMode("alt_hold")
 
 for i in range(5):
-    MLI.wait(1)
+    MLI.wait(2)
     print(MLI.getDepth())
     print(MLI.getPressureExternal())
+
+MLI.surface()
 
 input()
