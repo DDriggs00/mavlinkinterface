@@ -3,8 +3,8 @@ from mavlinkinterface.commands.active.flightModes import setFlightMode
 from mavlinkinterface.commands.active.arm_disarm import arm, disarm
 from mavlinkinterface.commands.active.gripper import gripperClose, gripperOpen
 from mavlinkinterface.commands.active.lights import lights
-from mavlinkinterface.commands.active.movement import move, move3d, dive, diveTime, yaw, yawBeta, surface, wait
-# from mavlinkinterface.commands.active.beta_commands import
+from mavlinkinterface.commands.active.movement import move, move3d, dive, diveTime, yaw, yawBeta, surface, wait, yaw2
+# from mavlinkinterface.commands.active.beta_commands import yaw2
 
 __all__ = [
     "arm",
@@ -21,5 +21,6 @@ __all__ = [
     "diveDepth",
     "lights",
     "gripperClose",
-    "gripperOpen"
+    "gripperOpen",
+    "yaw2"
 ]
