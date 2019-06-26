@@ -23,6 +23,11 @@ These functions perform exactly as described in the readme
 
 These functions were not originally intended, but were added
 
+- setSurfacePressure()
+  - This was needed for the getDepth() function
+- setFluidDensity()
+  - This was needed for the getDepth() function
+
 ## Partially completed functions
 
 These functions work as described in the documentation, but to a lesser grade of accuracy. Details on the failings of each one included. These are actively under development
