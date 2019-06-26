@@ -251,7 +251,7 @@ def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calcul
             # In relative mode, yaw by the input angle
             targetHeading = angle + currentHeading
 
-        # If the drone is below the desired depth
+        # If the drone must rotate
         if currentHeading > targetHeading:  # Counterclockwise
             i = 0
             while currentHeading > targetHeading + 2:     # Until within 2 degrees of target, yaw at 25%
@@ -267,7 +267,7 @@ def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calcul
                 i += 1
                 currentHeading = mli.getHeading()
 
-        # If the drone is below the desired depth
+        # If the drone must rotate clockwise
         if currentHeading < targetHeading:  # Clockwise
             i = 0
             while currentHeading < targetHeading - 2:     # Until within 2 degrees of target, yaw at 25%
@@ -283,7 +283,15 @@ def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calcul
                 i += 1
                 currentHeading = mli.getHeading()
 
-        print(mli.messages['ATTITUDE'].yawspeed)
+        while mli.messages['ATTITUDE'].yawspeed > 0.0012:
+            mli.mavlinkConnection.mav.manual_control_send(
+                mli.mavlinkConnection.target_system,
+                0,      # x [ forward(1000)-backward(-1000)]
+                0,      # y [ left(-1000)-right(1000) ]
+                500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
+                250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            sleep(.05)
 
         # Stop thrusting when the desired depth has been reached
         mli.mavlinkConnection.mav.manual_control_send(
