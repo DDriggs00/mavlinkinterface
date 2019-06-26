@@ -113,6 +113,3 @@ build/
 
 # Playground not needed
 testing.py
-
-# ignore logs
-.log
