@@ -4,9 +4,7 @@ Disables the propellers
 
 ## Return Values
 
-Returns a string.  
-Upon success, returns "Success"  
-Upon Failure, Returns the reason for failure
+Returns void
 
 ## Examples
 

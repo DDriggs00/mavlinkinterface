@@ -16,9 +16,7 @@ throttle (integer, optional):
 
 ## Return Values
 
-Returns a string.  
-If the action completed successfully, returns "Success"  
-If the action failed, returns the reason and time (in seconds from start) of failure
+Returns void
 
 ## Examples
 

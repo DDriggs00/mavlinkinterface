@@ -36,7 +36,7 @@ ACRO
 
 ## Parameters
 
-mode (enum):  
+mode (string):  
 > The mode to use
 
 ## Return Values
@@ -46,6 +46,6 @@ Returns void
 ## Example
 
 ```py
-setFlightMode(depth_hold)
+setFlightMode(ALT_HOLD)
 # sets the drone to depth hold mode
 ```
