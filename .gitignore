@@ -52,7 +52,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+# *.log
 local_settings.py
 db.sqlite3
 
@@ -111,5 +111,5 @@ build/
 # Editor settings
 .vscode
 
-# Playground not needed
-testing.py
+# # Playground not needed
+# testing.py
