@@ -4,11 +4,15 @@ from math import pi, sin, cos           # for movement direction
 
 from mavlinkinterface.logger import getLogger
 
+
 def move3d(ml, sem, throttleX, throttleY, throttleZ, time):
     '''Throttle functions are integers from -100 to 100'''
     try:
         log = getLogger("Movement")
-        log.info("Moving in direction X=" + str(throttleX) + " Y=" + str(throttleY) + " Z=" + str(throttleZ) + " for " + str(time) + " seconds")
+        log.info("Moving in direction X=" + str(throttleX)
+                 + " Y=" + str(throttleY)
+                 + " Z=" + str(throttleZ)
+                 + " for " + str(time) + " seconds")
         x = 10 * throttleX
         y = 10 * throttleY
         z = 5 * throttleZ + 500
@@ -19,7 +23,7 @@ def move3d(ml, sem, throttleX, throttleY, throttleZ, time):
                 x,  # x [back(-1000), forward(1000)]
                 y,  # y [left(-1000), right(1000)]
                 z,  # z [down(0), up(1000)]
-                0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                0,  # r [ Yaw, with counter-clockwise being negative. ]
                 0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
             sleep(.25)
         ml.mav.manual_control_send(
@@ -27,11 +31,12 @@ def move3d(ml, sem, throttleX, throttleY, throttleZ, time):
             0,  # x [back(-1000), forward(1000)]
             0,  # y [left(-1000), right(1000)]
             500,  # z [down(0), up(1000)]
-            0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+            0,  # r [ Yaw, with counter-clockwise being negative. ]
             0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
 
     finally:
         sem.release()
+
 
 def move(ml, sem, direction, time, throttle=100):
     '''
@@ -42,7 +47,8 @@ def move(ml, sem, direction, time, throttle=100):
     '''
     try:
         log = getLogger("Movement")
-        log.info("Moving in direction: " + str(direction) + " at " + str(throttle) + "% throttle for " + str(time) + " seconds")
+        log.info("Moving in direction: " + str(direction)
+                 + " at " + str(throttle) + "% throttle for " + str(time) + " seconds")
         x = cos(pi * direction / 180)
         y = sin(pi * direction / 180)
         scaler = (1000 / max(abs(x), abs(y))) * (throttle / 100)
@@ -55,7 +61,7 @@ def move(ml, sem, direction, time, throttle=100):
                 x,      # x [ forward(1000)-backward(-1000)]
                 y,      # y [ left(-1000)-right(1000) ]
                 500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                0,      # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                0,      # r [ Yaw, with counter-clockwise being negative. ]
                 0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
             sleep(.25)
         ml.mav.manual_control_send(
@@ -63,11 +69,12 @@ def move(ml, sem, direction, time, throttle=100):
             0,      # x [ forward(1000)-backward(-1000)]
             0,      # y [ left(-1000)-right(1000) ]
             500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-            0,      # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+            0,      # r [ Yaw, with counter-clockwise being negative. ]
             0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
 
     finally:
         sem.release()
+
 
 def diveTime(ml, sem, time, throttle):
     '''
@@ -84,7 +91,7 @@ def diveTime(ml, sem, time, throttle):
                 0,  # x [ forward(1000)-backward(-1000)]
                 0,  # y [ left(-1000)-right(1000) ]
                 z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                0,  # r [ Yaw, with counter-clockwise being negative. ]
                 0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
             sleep(0.25)
         ml.mav.manual_control_send(
@@ -92,7 +99,7 @@ def diveTime(ml, sem, time, throttle):
             0,  # x [ forward(1000)-backward(-1000)]
             0,  # y [ left(-1000)-right(1000) ]
             500,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-            0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+            0,  # r [ Yaw, with counter-clockwise being negative. ]
             0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
     finally:
         sem.release()
@@ -105,7 +112,9 @@ def dive(mli, depth, throttle=100, absolute=False):
     '''
     try:
         log = getLogger("Movement")
-        log.info("Diving to depth=" + str(depth) + " at throttle=" + str(throttle) + "% power, absolute=" + str(absolute))
+        log.info("Diving to depth=" + str(depth)
+                 + " at throttle=" + str(throttle)
+                 + "% power, absolute=" + str(absolute))
         currentDepth = mli.getDepth()
 
         if absolute:
@@ -124,18 +133,18 @@ def dive(mli, depth, throttle=100, absolute=False):
         # If the drone is below the desired depth
         if currentDepth > targetDepth:     # Need to Dive
             z = (throttle * 5) + 500 * -1
-            while currentDepth > targetDepth + .5 and not stuck:     # Until within 1.5m of target, thrust at desired throttle
+            while currentDepth > targetDepth + .5 and not stuck:     # Until within 0.5m of target, thrust
                 currentDepth = mli.getDepth()
                 mli.mavlinkConnection.mav.manual_control_send(
                     mli.mavlinkConnection.target_system,
                     0,  # x [ forward(1000)-backward(-1000)]
                     0,  # y [ left(-1000)-right(1000) ]
                     z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                    0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                    0,  # r [ Yaw, with counter-clockwise being negative. ]
                     0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
                 if i == 12:                                 # If, over the course 3 sec
                     if -1 <= oldDepth - currentDepth <= 1:  # If depth has not changed
-                        stuck = True                        # The drone must either be stuck or at the surface, but miscalibrated
+                        stuck = True                        # The drone must either be stuck or miscalibrated
                     i = 0
                     oldDepth = currentDepth
                 i += 1
@@ -143,18 +152,18 @@ def dive(mli, depth, throttle=100, absolute=False):
         # If the drone is below the desired depth
         elif currentDepth < targetDepth:
             z = (throttle * 5) + 500
-            while currentDepth < targetDepth + .5 and not stuck:     # Until within 1.5m of target, thrust at desired throttle
+            while currentDepth < targetDepth + .5 and not stuck:    # Until within 0.5m of target, thrust
                 currentDepth = mli.getDepth()
                 mli.mavlinkConnection.mav.manual_control_send(
                     mli.mavlinkConnection.target_system,
                     0,  # x [ forward(1000)-backward(-1000)]
                     0,  # y [ left(-1000)-right(1000) ]
                     z,  # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                    0,  # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                    0,  # r [ Yaw, with counter-clockwise being negative. ]
                     0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
                 if i == 12:                                 # If, over the course 3 sec
                     if -1 <= oldDepth - currentDepth <= 1:  # If depth has not changed
-                        stuck = True                        # The drone must either be stuck or at the surface, but miscalibrated
+                        stuck = True                        # The drone must either be stuck or miscalibrated
                     i = 0
                     oldDepth = currentDepth
                 i += 1
@@ -166,10 +175,11 @@ def dive(mli, depth, throttle=100, absolute=False):
             0,      # x [ forward(1000)-backward(-1000)]
             0,      # y [ left(-1000)-right(1000) ]
             500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-            0,      # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+            0,      # r [ Yaw, with counter-clockwise being negative. ]
             0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
     finally:
         mli.sem.release()
+
 
 def surface(mli):  # TODO
     log = getLogger("Movement")
@@ -180,7 +190,9 @@ def surface(mli):  # TODO
 def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
     try:
         log = getLogger("Movement")
-        log.info("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ") + str(angle) + " degrees at " + str(rate) + " deg/s in " + ("relative" if (relative == 1) else "Absolute") + " mode.")
+        log.info("Yawing " + ("clockwise by " if (direction == 1) else "Counterclockwise by ")
+                 + str(angle) + " degrees at " + str(rate) + " deg/s in "
+                 + ("relative" if (relative == 1) else "Absolute") + " mode.")
 
         ml.mav.command_long_send(
             ml.target_system,
@@ -199,6 +211,7 @@ def yawBeta(ml, sem, angle, rate=20, direction=1, relative=0):
     finally:
         sem.release()
 
+
 def yaw(ml, sem, angle, absolute=False):
     try:
         log = getLogger("Movement")
@@ -216,6 +229,7 @@ def yaw(ml, sem, angle, absolute=False):
     finally:
         sem.release()
 
+
 def wait(ml, sem, time):
     try:
         log = getLogger("Movement")
@@ -232,6 +246,7 @@ def wait(ml, sem, time):
 
     finally:
         sem.release()
+
 
 def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calculation
     '''
@@ -261,7 +276,7 @@ def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calcul
                         0,      # x [ forward(1000)-backward(-1000)]
                         0,      # y [ left(-1000)-right(1000) ]
                         500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                        -250,   # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                        -250,   # r [ Yaw, with counter-clockwise being negative. ]
                         0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
                 sleep(.1)
                 i += 1
@@ -277,21 +292,21 @@ def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calcul
                         0,      # x [ forward(1000)-backward(-1000)]
                         0,      # y [ left(-1000)-right(1000) ]
                         500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                        250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+                        250,    # r [ Yaw, with counter-clockwise being negative. ]
                         0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
                 sleep(.1)
                 i += 1
                 currentHeading = mli.getHeading()
 
-        while mli.messages['ATTITUDE'].yawspeed > 0.0012:
-            mli.mavlinkConnection.mav.manual_control_send(
-                mli.mavlinkConnection.target_system,
-                0,      # x [ forward(1000)-backward(-1000)]
-                0,      # y [ left(-1000)-right(1000) ]
-                500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-                250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
-                0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
-            sleep(.05)
+        # while mli.messages['ATTITUDE'].yawspeed > 0.0012:
+        #     mli.mavlinkConnection.mav.manual_control_send(
+        #         mli.mavlinkConnection.target_system,
+        #         0,      # x [ forward(1000)-backward(-1000)]
+        #         0,      # y [ left(-1000)-right(1000) ]
+        #         500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
+        #         250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative (Yaw).]
+        #         0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+        #     sleep(.05)
 
         # Stop thrusting when the desired depth has been reached
         mli.mavlinkConnection.mav.manual_control_send(
@@ -299,7 +314,7 @@ def yaw2(mli, angle, absolute=False):   # TODO add rotational momentum to calcul
             0,      # x [ forward(1000)-backward(-1000)]
             0,      # y [ left(-1000)-right(1000) ]
             500,    # z [ maximum being 1000 and minimum being 0 on a joystick and the thrust of a vehicle.]
-            0,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative. Corresponds to Yaw]
+            0,      # r [ Yaw, with counter-clockwise being negative. ]
             0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
     finally:
         mli.sem.release()

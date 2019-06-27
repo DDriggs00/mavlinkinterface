@@ -1,6 +1,7 @@
 from pymavlink import mavutil
 from mavlinkinterface.logger import getLogger
 
+
 def arm(ml, sem):
     try:
         log = getLogger("Status")

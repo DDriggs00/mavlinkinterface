@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class flightModes(Enum):
     manual = 'MANUAL'
     # Manual mode passes the pilot inputs directly to the motors, with no stabilization.

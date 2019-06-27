@@ -4,6 +4,7 @@ from os.path import abspath     # For setting path based
 from os.path import expanduser  # For setting path based
 from os import makedirs         # For setting path based
 
+
 def getLogger(name, fileName=None, doPrint=False, basic=False):
     if basic:
         logFormat = '%(asctime)s, %(message)s'
