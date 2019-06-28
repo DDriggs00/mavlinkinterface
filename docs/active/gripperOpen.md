@@ -1,8 +1,11 @@
-# disarm(execMode \<optional>)
+# gripperOpen( time, execMode \<optional> )
 
-Disables the propellers
+Power the gripper arm open for *time* seconds
 
 ## Parameters
+
+time (float):  
+> The number of seconds to send the "close" signal to the gripper arm
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:
@@ -22,10 +25,6 @@ Returns void
 ## Examples
 
 ```py
-disarm
-# The propellers disable, returns "Success"
+MLI.gripperOpen(0.5)
+# The grabber arm powers open for 1/2 second
 ```
-
-## Related Mavlink Functions
-
-- [MAV_CMD_COMPONENT_ARM_DISARM](https://mavlink.io/en/messages/common.html#MAV_CMD_COMPONENT_ARM_DISARM)
