@@ -1,4 +1,4 @@
-# dive( depth, throttle \<optional>, execMode \<optional> )
+# dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )
 
 This call is used to change the depth of the drone.
 
@@ -11,6 +11,9 @@ depth (float):
 throttle (int, optional):
 > The percentage of vertical thrust to use.  
 > Default is 100
+
+absolute (boolean, optional):
+> When true, *depth* signifies the target depth, rather than the change in depth
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:

@@ -1,4 +1,4 @@
-# yaw( degrees, execMode \<optional> )
+# yaw( degrees, absolute \<optional>, execMode \<optional> )
 
 Relative: yaws the drone in place by *degrees*  degrees  
 Absolute: yaws the drone to face in the direction *degrees* degrees
@@ -8,6 +8,10 @@ Absolute: yaws the drone to face in the direction *degrees* degrees
 degrees (integer)
 > An integer for how many degrees to rotate
 > In absolute mode, this is limited to between 0 and 360.
+
+absolute (boolean, optional):
+> When true, *degrees* is relative to magnetic north  
+> When false or absent, *degrees* is relative to the current heading of the drone
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:

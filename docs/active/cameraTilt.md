@@ -1,4 +1,4 @@
-# cameraTilt( angle, speed \<optional>, execMode \<optional> )
+# cameraTilt( angle, speed \<optional>, absolute \<optional>, execMode \<optional> )
 
 Tilts the camera by the angle specified. Range is +/- 90 degrees.
 
@@ -11,6 +11,9 @@ angle (integer):
 speed (integer, optional):  
 > An integer from 1 to 100 representing the percentage of total velocity to use when rotating the camera. Useful for panning when taking video.  
 > Default is 100.
+
+absolute (boolean, optional):
+> When true,  the camera mount rotates to face a specific angle instead of rotating by that angle
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:

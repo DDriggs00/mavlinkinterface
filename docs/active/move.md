@@ -1,4 +1,4 @@
-# move( direction, time, throttle \<optional>, execMode \<optional> )
+# move( direction, time, throttle \<optional>, absolute \<optional>, execMode \<optional> )
 
 Move the drone *direction* at *throttle* percent power for *time* seconds
 
@@ -13,6 +13,10 @@ time (float):
 throttle (integer, optional):  
 > An integer from 1 to 100 representing the percentage of propeller power to use.  
 > Defaults to 100
+
+absolute (boolean, optional):
+> When true, *direction* is relative to magnetic north  
+> When false or absent, *direction* is relative to the current heading of the drone
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:
