@@ -270,7 +270,7 @@ class mavlinkInterface(object):
         '''Enables the thrusters'''
 
         # Create thread object
-        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent))
+        t = Thread(target=commands.active.arm, args=(self.mavlinkConnection, self.sem))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):    # If sem was able to be acquired
@@ -314,7 +314,7 @@ class mavlinkInterface(object):
         Parameter Absolute: When true, an angle of 0 degrees is magnetic north
         '''
         t = Thread(target=commands.active.move,
-                   args=(self.mavlinkConnection, self.sem, direction, time, throttle,))
+                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, direction, time, throttle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -332,7 +332,8 @@ class mavlinkInterface(object):
         Parameter Time: The time (in seconds) to power the thrusters
         '''
         t = Thread(target=commands.active.move3d,
-                   args=(self.mavlinkConnection, self.sem, throttleX, throttleY, throttleZ, time,))
+                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent,
+                         throttleX, throttleY, throttleZ, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -348,7 +349,7 @@ class mavlinkInterface(object):
         :param throttle: Percent throttle to use
         :param absolute <optional>: When True, dives to the depth given relative to sea level
         '''
-        t = Thread(target=commands.active.dive, args=(self, depth, throttle, absolute,))
+        t = Thread(target=commands.active.dive, args=(self, self.currentTaskKillEvent, depth, throttle, absolute,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -363,7 +364,8 @@ class mavlinkInterface(object):
         :param time: how long to thrust in seconds
         :param throttle: percent throttle to use, -100 = full down, 100 = full up
         '''
-        t = Thread(target=commands.active.diveTime, args=(self.mavlinkConnection, self.sem, time, throttle,))
+        t = Thread(target=commands.active.diveTime,
+                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, time, throttle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -375,7 +377,7 @@ class mavlinkInterface(object):
         '''
         Thrust upward at full power until reaching the surface
         '''
-        t = Thread(target=commands.active.surface, args=(self,))
+        t = Thread(target=commands.active.surface, args=(self, self.currentTaskKillEvent,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -388,7 +390,8 @@ class mavlinkInterface(object):
 
         angle: distance to rotate in degrees
         '''
-        t = Thread(target=commands.active.yaw, args=(self.mavlinkConnection, self.sem, angle,))
+        t = Thread(target=commands.active.yaw,
+                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, angle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -401,7 +404,7 @@ class mavlinkInterface(object):
 
         angle: distance to rotate in degrees
         '''
-        t = Thread(target=commands.active.yaw2, args=(self, angle, absolute,))
+        t = Thread(target=commands.active.yaw2, args=(self, self.currentTaskKillEvent, angle, absolute,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
