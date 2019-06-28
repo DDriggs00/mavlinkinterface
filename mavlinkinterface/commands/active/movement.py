@@ -358,7 +358,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
                 i += 1
                 currentHeading = mli.getHeading()
 
-        # while mli.messages['ATTITUDE'].yawspeed > 0.0012:
+        # while mli.messages['ATTITUDE'].message.yawspeed > 0.0012:
         #     mli.mavlinkConnection.mav.manual_control_send(
         #         mli.mavlinkConnection.target_system,
         #         0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
