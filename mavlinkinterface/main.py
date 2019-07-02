@@ -189,15 +189,15 @@ class mavlinkInterface(object):
             #     # TODO figure out which exception is periodically showing up
             # Timeout used so it has the chance to notice the stop flag when no data is present
             if msg:
-                self.messages[str(msg.get_type())] = {"message": msg, "time": datetime()}
+                self.messages[str(msg.get_type())] = {"message": msg, "time": datetime.now()}
 
     def __leakDetector(self, killEvent):
         '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''
         log = getLogger("Status", doPrint=True)
         log.debug("Leak Detector started")
         while not killEvent.wait(timeout=1):
-            if 'STATUSTEXT' in self.messages and 'LEAK' in str(self.messages['STATUSTEXT'].message).upper():
-                log.error("Leak Detected: " + self.messages['STATUSTEXT'].message)    # Write the message to the log
+            if 'STATUSTEXT' in self.messages and 'LEAK' in str(self.messages['STATUSTEXT']['message']).upper():
+                log.error("Leak Detected: " + self.messages['STATUSTEXT']['message'])    # Write the message to the log
                 self.dive(0, absolute=True)   # Then run the appropriate response
 
         log.debug("StatusMonitor Stopping")
@@ -447,9 +447,9 @@ class mavlinkInterface(object):
             sleep(1)
 
         data = {}
-        data['voltage'] = self.messages['SYS_STATUS'].message.voltage_battery / 1000        # convert to volts
-        data['current'] = self.messages['SYS_STATUS'].message.current_battery
-        data['percent_remaining'] = self.messages['SYS_STATUS'].message.battery_remaining
+        data['voltage'] = self.messages['SYS_STATUS']['message'].voltage_battery / 1000        # convert to volts
+        data['current'] = self.messages['SYS_STATUS']['message'].current_battery
+        data['percent_remaining'] = self.messages['SYS_STATUS']['message'].battery_remaining
         return json.dumps(data)
 
     def getAccelerometerData(self):
@@ -462,9 +462,9 @@ class mavlinkInterface(object):
             sleep(1)
 
         data = {}
-        data['X'] = self.messages['RAW_IMU'].message.xacc
-        data['Y'] = self.messages['RAW_IMU'].message.yacc
-        data['Z'] = self.messages['RAW_IMU'].message.zacc
+        data['X'] = self.messages['RAW_IMU']['message'].xacc
+        data['Y'] = self.messages['RAW_IMU']['message'].yacc
+        data['Z'] = self.messages['RAW_IMU']['message'].zacc
         return json.dumps(data)
 
     def getGyroscopeData(self):
@@ -477,9 +477,9 @@ class mavlinkInterface(object):
             sleep(1)
 
         data = {}
-        data['X'] = self.messages['RAW_IMU'].message.xgyro
-        data['Y'] = self.messages['RAW_IMU'].message.ygyro
-        data['Z'] = self.messages['RAW_IMU'].message.zgyro
+        data['X'] = self.messages['RAW_IMU']['message'].xgyro
+        data['Y'] = self.messages['RAW_IMU']['message'].ygyro
+        data['Z'] = self.messages['RAW_IMU']['message'].zgyro
         return json.dumps(data)
 
     def getMagnetometerData(self):
@@ -490,9 +490,9 @@ class mavlinkInterface(object):
             sleep(1)
 
         data = {}
-        data['X'] = self.messages['RAW_IMU'].message.xmag
-        data['Y'] = self.messages['RAW_IMU'].message.ymag
-        data['Z'] = self.messages['RAW_IMU'].message.zmag
+        data['X'] = self.messages['RAW_IMU']['message'].xmag
+        data['Y'] = self.messages['RAW_IMU']['message'].ymag
+        data['Z'] = self.messages['RAW_IMU']['message'].zmag
         return json.dumps(data)
 
     def getIMUData(self):
@@ -630,4 +630,4 @@ class mavlinkInterface(object):
 
     def getHeading(self):
         # mag_heading found in pymavlink.mavextra
-        return mag_heading(self.messages['RAW_IMU'].message, self.messages['ATTITUDE'].message)
+        return mag_heading(self.messages['RAW_IMU']['message'], self.messages['ATTITUDE']['message'])
