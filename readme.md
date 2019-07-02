@@ -34,13 +34,13 @@ To use this library, you must already have an underwater drone set up and workin
 
 ## Function List
 
-For Full function list, see [here](docs/functions.py)
+For Full function list, see [here](docs/functions.md)
 
 ## Common Parameters
 
 ### execMode (string)  
 
-This argument prevents all other active calls until the paired command has been finished or aborted.
+This sets the execution mode of the attached command. For information of the various execution modes, see [here](docs/executionModes.md)
 
 ### Absolute (switch)
 
