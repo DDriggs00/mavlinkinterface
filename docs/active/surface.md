@@ -1,4 +1,4 @@
-# surface(execMode \<optional>)
+# surface( execMode \<optional> )
 
 This call brings the drone to the surface. It returns True upon success and False upon obstruction.  
 

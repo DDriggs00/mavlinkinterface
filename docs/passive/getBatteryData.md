@@ -5,7 +5,7 @@ Reads battery statistics and calculates battery percentage
 ## Return Values
 
 Returns a JSON-Formatted string.  
-Returns a JSON containing all information about the battery.
+Returns all available information about the battery.
 
 ## Examples
 
