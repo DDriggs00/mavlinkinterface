@@ -9,7 +9,7 @@
 - [Multiple methods for handling sequential commands](docs/executionModes.md)
 - All sensor info accessible
   - Per sensor
-  - Per sensor module
+  - Per sensor module (eg. IMU, SENSOR_POD_1)
   - Together
 - Easily switch between flight modes
 
@@ -30,7 +30,23 @@ heartbeat
 
 ## Usage
 
-To use this library, you must already have an underwater drone set up and working with qGroundControl.  Once that is working, see [the examples](examples/).
+To use this library, you must already have an underwater drone set up and working with qGroundControl.  Once that is working, perform the following steps.
+
+1. Import the library in your python script
+   - `import mavlinkinterface`
+1. Create an instance of the interface. All interactions with the drone will be completed through this interface. Note that you may provide a default execution mode (see [here](docs/executionModes.md) for details)
+   - `MLI = mavlinkinterface.mavlinkInterface(execMode="queue")`
+1. If you are diving for the first time in a given body of water, set the surface pressure.
+   - [`MLI.setSurfacePressure()`](docs/configuration/setSurfacePressure.md)
+1. If you are diving in a medium that has a different density from fresh water or the last used medium (eg. salt water), set the density
+   - [`MLI.setSurfacePressure(1027)`](docs/configuration/setSurfacePressure.md)
+1. Arm the Drone
+   - [`MLI.arm()`](docs/active/arm.md)
+1. Proceed with script
+1. Disarm the Drone
+   - [`MLI.disarm()`](docs/active/disarm.md)
+
+See [the examples](examples/) for more in-depth instructions.
 
 ## Function List
 
