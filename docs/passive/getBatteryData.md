@@ -19,7 +19,7 @@ Example output:
 }
 ```
 
-## Related Mavlink Enumerations
+<!-- ## Related Mavlink Enumerations
 
 - [MAV_BATTERY_TYPE](https://mavlink.io/en/messages/common.html#MAV_BATTERY_TYPE)
 - [MAV_BATTERY_FUNCTION](https://mavlink.io/en/messages/common.html#MAV_BATTERY_FUNCTION)
@@ -30,4 +30,4 @@ Example output:
 
 - [BATTERY_STATUS](https://mavlink.io/en/messages/common.html#BATTERY_STATUS)
 - [SMART_BATTERY_INFO](https://mavlink.io/en/messages/common.html#SMART_BATTERY_INFO) (Beta)
-- [SMART_BATTERY_STATUS](https://mavlink.io/en/messages/common.html#SMART_BATTERY_STATUS) (Beta)
+- [SMART_BATTERY_STATUS](https://mavlink.io/en/messages/common.html#SMART_BATTERY_STATUS) (Beta) -->

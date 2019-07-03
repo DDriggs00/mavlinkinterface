@@ -17,11 +17,13 @@ Ignore mode:
 
 The initial setting is Override
 
+For more information, see [here](../executionModes.md),
+
 ## Parameters
 
 Mode (enum):  
 > The queuing mode to use by default. Possible values are:  
-> `synchronous`
+> `synchronous`  
 > `queue`  
 > `override`  
 > `ignore`

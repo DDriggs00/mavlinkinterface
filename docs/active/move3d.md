@@ -1,4 +1,4 @@
-# move( throttleX, throttleY, throttleZ, time, execMode \<optional> )
+# move3d( throttleX, throttleY, throttleZ, time, execMode \<optional> )
 
 Move the drone in a given direction and power level for *time* seconds
 

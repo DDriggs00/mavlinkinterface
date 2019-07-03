@@ -1,6 +1,6 @@
 # gripperClose( time, execMode \<optional> )
 
-Close the grabber arm by *percent*% or until gripping an object with *strength*% strength
+Power the gripper arm closed for *time* seconds
 
 ## Parameters
 
