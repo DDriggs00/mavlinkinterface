@@ -42,7 +42,5 @@ build/
 # Mavlink stuff
 mav.parm
 eeprom.bin
-mav.tlog
-mav.tlog.raw
-logs/00000001.BIN
-logs/LASTLOG.TXT
+mav.tlog*
+logs/
