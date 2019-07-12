@@ -23,9 +23,13 @@ heartbeat
 ## Installation
 
 1. Install python 3 (See instructions [here](https://realpython.com/installing-python/))
-1. Install pymavlink (See instructions [here](https://github.com/ArduPilot/pymavlink))
+   - If ppi3 was not installed along with python, install it now
+1. Install pymavlink
+   - `pip3 install pymavlink` Note: Use the `--user` flag on Windows
+1. Install bluerobotics-ping
+   - `pip3 install bluerobotics-ping` Note: Use the `--user` flag on Windows
 1. Download this repository
-1. Navigate a shell or administrator CMD prompt to the folder containing `setup.py`
+1. Navigate a terminal or administrator CMD prompt to the folder containing `setup.py`
 1. Run `python3 ./setup.py install`
 
 ## Usage
