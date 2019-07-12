@@ -57,6 +57,15 @@ Returns void
 ## Example
 
 ```py
-setFlightMode(ALT_HOLD)
+MLI.setFlightMode(ALT_HOLD)
 # sets the drone to depth hold mode
 ```
+
+## Related Mavlink Enumerations
+
+- MAV_MODE
+- MAV_MODE_DECODE_POSITION
+
+## Related Mavlink Commands
+
+- MAV_CMD_DO_SET_MODE

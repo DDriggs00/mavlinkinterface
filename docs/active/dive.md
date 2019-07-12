@@ -10,7 +10,7 @@ depth (float):
 
 throttle (int, optional):
 > The percentage of vertical thrust to use.  
-> Default is 100
+> Default is 50
 
 absolute (boolean, optional):
 > When true, *depth* signifies the target depth, rather than the change in depth
@@ -33,12 +33,16 @@ Returns void
 ## Examples
 
 ```py
-dive(depth = -10)
+MLI.dive(depth = -10)
 # The drone descends by 10 meters or until it is obstructed
 
-dive(depth = 10, throttle = 50)
-# The drone ascends by 10 meters at 50 percent throttle or until it is obstructed
+MLI.dive(depth = 10, throttle = 100)
+# The drone ascends by 10 meters at 100 percent throttle or until it is obstructed
 
-dive(depth = 5, absolute)
+MLI.dive(depth = 5, absolute)
 # An exception is thrown, indicating that the drone cannot rise above the surface of the water
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL

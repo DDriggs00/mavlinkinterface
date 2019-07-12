@@ -26,6 +26,6 @@ MLI.arm()
 # The propellors are now armed
 ```
 
-## Related Mavlink Functions
+## Related Mavlink Commands
 
-- [MAV_CMD_COMPONENT_ARM_DISARM](https://mavlink.io/en/messages/common.html#MAV_CMD_COMPONENT_ARM_DISARM)
+- MAV_CMD_COMPONENT_ARM_DISARM

@@ -12,7 +12,7 @@ time (float):
 
 throttle (integer, optional):  
 > An integer from 1 to 100 representing the percentage of propeller power to use.  
-> Defaults to 100
+> Defaults to 50
 
 absolute (boolean, optional):
 > When true, *direction* is relative to magnetic north  
@@ -36,9 +36,13 @@ Returns void
 ## Examples
 
 ```py
-move(direction = 0, time = 15, throttle = 75)
+MLI.move(direction = 0, time = 15, throttle = 75)
 # Moves the drone straight forward at 75% power for 15 seconds
 
-move(direction = -15, time = 0.5, absolute)
+MLI.move(direction = -15, time = 0.5, absolute)
 # moves in the direction of 15 degrees to the right of magnetic north at 100% power for half a second
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL

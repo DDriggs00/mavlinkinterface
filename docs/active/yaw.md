@@ -26,19 +26,21 @@ execMode (string, optional):
 
 ## Return Values
 
-Returns a string.  
-Upon completing the desired rotations, returns "Success"  
-If the action could not be completed (eg. Obstruction, overridden), returns the reason for failure and the new heading
+Returns void.
 
 ## Examples
 
 ```py
-rotate(degrees = 15)
+MLI.yaw(degrees = 15)
 # Result: The drone yaws to the right by 15 degrees
 
-rotate(degrees = -720)
+MLI.yaw(degrees = -720)
 # Result: The drone yaws to the left by 2 full rotations
 
-rotate(degrees = -15, absolute)
+MLI.yaw(degrees = -15, absolute)
 # Result: The drone yaws the shortest distance to face 15 degrees to the left of magnetic north
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL

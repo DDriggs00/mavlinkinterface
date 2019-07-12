@@ -5,7 +5,8 @@ Sets the lights to a specific brightness
 ## Parameters
 
 brightness (integer):  
-> An integer from 0 to 100, representing the percent brightness of the lights.
+> An integer from 0 to 100, representing the percent brightness of the lights.  
+> This will be rounded to the nearest allowed lighting level.
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:
@@ -27,12 +28,16 @@ Upon Failure, returns the reason for failure.
 ## Examples
 
 ```py
-setLights(0)
+MLI.setLights(0)
 # Turns the lights off
 
-setLights(65)
+MLI.setLights(65)
 # sets the lights to 65% brightness
 
-setLights(100)
+MLI.setLights(100)
 # sets the lights to full brightness
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL

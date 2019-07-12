@@ -28,3 +28,7 @@ Returns void
 MLI.gripperClose(0.5)
 # The grabber arm closes for 1/2 second
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL

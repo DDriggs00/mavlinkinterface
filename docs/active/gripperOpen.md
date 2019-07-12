@@ -28,3 +28,7 @@ Returns void
 MLI.gripperOpen(0.5)
 # The grabber arm powers open for 1/2 second
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL

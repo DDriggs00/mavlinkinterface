@@ -24,6 +24,10 @@ Upon Failure, returns the reason for failure and the new depth
 ## Example
 
 ```py
-surface
+MLI.surface()
 # The drone ascends to the surface
 ```
+
+## Related Mavlink Messages
+
+- MANUAL_CONTROL
