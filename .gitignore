@@ -44,3 +44,4 @@ mav.parm
 eeprom.bin
 mav.tlog*
 logs/
+testing.py
