@@ -4,6 +4,10 @@
 
 These functions perform exactly as described in the readme
 
+### Active
+
+These functions cause the drone to take a physical action.  
+
 - [arm()](active/arm.md)
 - [disarm()](active/disarm.md)
 - [setFlightMode( flightMode, execMode \<optional> )](active/setFlightMode.md)
@@ -11,6 +15,13 @@ These functions perform exactly as described in the readme
 - [move3d( throttleX, throttleY, throttleZ, time, execMode \<optional> )](active/move3d.md)
 - [surface( execMode \<optional> )](active/surface.md)
 - [setLights( brightness, execMode \<optional> )](active/lights.md)
+- [gripperOpen( time, execMode \<optional> )](active/gripperOpen.md)
+- [gripperClose( time, execMode \<optional> )](active/gripperClose.md)
+
+### Passive
+
+These functions do not cause the drone to make any action other than reading a sensor
+
 - [getDepth()](passive/getDepth.md)
 - [getGyroscopeData()](passive/getGyroscopeData.md)
 - [getAccelerometerData()](passive/getAccelerometerData.md)
@@ -19,14 +30,12 @@ These functions perform exactly as described in the readme
 - [getMagnetometerData()](passive/getMagnetometerData.md)
 - [getPressureExternal()](passive/getPressureExternal.md)
 
-## New Functions
+### Configuration
 
-These functions were not originally intended, but were added
+These functions modify configuration values, which persist on the device between missions
 
 - [setSurfacePressure( pressure \<optional> )](configuration/setSurfacePressure.md)
-  - This was needed for the getDepth() function
 - [setFluidDensity( density \<optional> )](configuration/setFluidDensity.md)
-  - This was needed for the getDepth() function (salt vs fresh water)
 
 ## Partially completed functions
 
@@ -34,17 +43,22 @@ These functions work as described in the documentation, but to a lesser grade of
 
 - [dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )](active/dive.md)
 - [yaw( degrees, absolute \<optional>, execMode \<optional> )](active/yaw.md)
+- [setLeakAction( action )](configuration/setLeakAction.md)
+
+## New Functions
+
+These functions were not originally intended, but were added since the last update.  
+After each update, these functions will be moved to the completed functions category.
+
+- [getAltitude()](passive/getAltitude.md)
+  - This takes advantage of the new sonar sensor
 
 ## Modified Functions (complete)
 
-These Functions were changed in a major way, which is explained below.
+These Functions were changed in a major way, which is explained below.  
+After each update, these functions will be moved to the completed functions category.
 
-- [gripperOpen( time, execMode \<optional> )](active/gripperOpen.md)
-  - The gripper arm can only be controlled by a pwm channel with 2 settings: Open, and close.  Due to this, the function is less featured than anticipated.
-- [gripperClose( time, execMode \<optional> )](active/gripperClose.md)
-  - The gripper arm can only be controlled by a pwm channel with 2 settings: Open, and close.  Due to this, the function is less featured than anticipated.
-- [setLeakAction( action )](configuration/setLeakAction.md)
-  - The leak sensor works oddly, in that it is silent until it detects a leak, at which point it is sends a STATUSTEXT message of "Leak Detected!". Due to this, this function is a thread that continuously checks the statusText and reads those messages.  setLeakAction is used to set the behavior upon encountering a leak.
+- No new notable changes
 
 ## Not Started functions
 
