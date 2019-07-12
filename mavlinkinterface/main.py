@@ -11,7 +11,7 @@ from configparser import ConfigParser   # For config file management
 from os.path import abspath             # For config file management
 from os.path import expanduser          # for config file management
 from os.path import exists              # For checking if config file exists
-from pymavlink.mavextra import mag_heading  # For calculating heading
+from pymavlink.mavextra import mag_heading  # Pre-Built function to calculate heading
 
 # Local Imports
 from mavlinkinterface.logger import getLogger               # For Logging
@@ -26,25 +26,28 @@ class mavlinkInterface(object):
     '''
 
     # Internal Commands
-    def __init__(self, execMode="asynchronous"):
+    def __init__(self, execMode):
         '''
         Creates a new mavlinkInterface Object
 
         :param execMode: The Execution mode to use when not given as a parameter.
                          See docs/configuration/setDefaultexecMode for details.\n
         '''
+        if execMode not in ['synchronous', 'queue', 'ignore', 'override']:
+            raise ValueError('The execMode parameter must be one of the following:\n'
+                             + ' synchronous, queue, ignore, override')
 
         # Initialize logger
-        self.log = getLogger("Main", doPrint=True)
-        self.log.debug("################################################################################")
-        self.log.debug("###################### New Log " + str(datetime.now()) + " ######################")
-        self.log.debug("################################################################################")
+        self.log = getLogger('Main', doPrint=True)
+        self.log.debug('################################################################################')
+        self.log.debug('###################### New Log ' + str(datetime.now()) + ' ######################')
+        self.log.debug('################################################################################')
 
         # Import config values
         self.config = ConfigParser()
-        self.configPath = abspath(expanduser("~/.mavlinkInterface.ini"))
+        self.configPath = abspath(expanduser('~/.mavlinkInterface.ini'))
         if exists(self.configPath):
-            self.log.debug("importing configuration file from path: " + self.configPath)
+            self.log.debug('importing configuration file from path: ' + self.configPath)
             self.config.read(self.configPath)
         else:   # Config file does not exist
             # Populate file with Default config options
@@ -60,7 +63,7 @@ class mavlinkInterface(object):
             self.config.write((open(self.configPath, 'w')))
 
         # Set class variables
-        self.log.debug("Setting class variables")
+        self.log.debug('Setting class variables')
         self.execMode = execMode
 
         # Create variables to contain mavlink message data
@@ -71,7 +74,7 @@ class mavlinkInterface(object):
         self.q = Queue()
 
         # Set up Mavlink
-        self.log.debug("Initializing MavLink Connection")
+        self.log.debug('Initializing MavLink Connection')
         connectionString = ('udp:' +
                             self.config['mavlink']['connection_ip'] +
                             ':' +
@@ -112,25 +115,25 @@ class mavlinkInterface(object):
         self.lights = commands.active.lights()
 
         # Validating heartbeat
-        self.log.info("Waiting for heartbeat")
+        self.log.info('Waiting for heartbeat')
         while 'HEARTBEAT' not in self.messages:
             sleep(.1)
-        self.log.info("Successfully connected to target.")
-        self.log.debug("__init__ end")
+        self.log.info('Successfully connected to target.')
+        self.log.debug('__init__ end')
 
     def __del__(self):
         '''Clean up while exiting'''
-        print("__del__ begin")
+        print('__del__ begin')
         # NOTE: logging does not work in __del__ for some reason
 
         # Stop statusMonitor and DataRefresher processes
         self.killEvent.set()
-        print("Kill Event Set")
+        print('Kill Event Set')
 
         # Disarm
         self.__getSemaphore(override=True)
         commands.active.disarm(self.mavlinkConnection, self.sem)
-        print("disarmed")
+        print('disarmed')
 
     # Private functions
     def __getSemaphore(self, mode, target):
@@ -144,42 +147,45 @@ class mavlinkInterface(object):
 
         if not self.sem.acquire(blocking=False):    # Semaphore could not be acquired, proceeding by mode
 
-            if mode == "synchronous":
-                self.log.info("QueueMode = synchronous, waiting for semaphore")
+            if mode == 'synchronous':
+                self.log.info('QueueMode = synchronous, waiting for queue and semaphore')
                 try:
+                    while self.q.qsize() > 0:
+                        sleep(.1)
                     self.sem.acquire(blocking=True)
                 except KeyboardInterrupt:
-                    self.log.error("Keyboard interrupt received, aborting command")
+                    self.log.error('Keyboard interrupt received, aborting command')
                     return False
+
                 return True
 
-            if mode == "override":
-                self.log.info("Override active, Killing existing task(s)")
+            if mode == 'override':
+                self.log.info('Override active, Killing existing task(s)')
                 self.stopAllTasks()
                 if not self.sem.acquire(blocking=False):    # If the current task did not properly release the semaphore
                     self.sem.release()                      # Release it
                     self.sem.acquire()                      # Then re-take it
                 return True     # Now that previous action has been killed, execute current action
-            elif self.execMode == "ignore":
-                self.log.info("Using Ignore mode, command ignored")
+            elif self.execMode == 'ignore':
+                self.log.info('Using Ignore mode, command ignored')
                 return False    # The command should not be executed
 
-            elif self.execMode == "queue":
-                self.log.info("Using queue Mode, Adding item to queue")
+            elif self.execMode == 'queue':
+                self.log.info('Using queue Mode, Adding item to queue')
                 self.q.put(target)
                 return False    # The command will be executed by the QueueManager process
         return True     # If the semaphore was obtained on the first try
 
     def __updateMessage(self, killEvent):
         '''This function automatically updates a variable to contain the contents of a mavlink message'''
-        log = getLogger("Refresh")  # Log that this was started
-        log.debug("dataRefresher Class Initiating.")
-        logMessages = ["SYS_STATUS",
+        log = getLogger('Refresh')  # Log that this was started
+        log.debug('dataRefresher Class Initiating.')
+        logMessages = ['SYS_STATUS',
                        'RAW_IMU',
                        self.config['messages']['pressureSensorExternal'],
                        'HEARTBEAT',
                        'ATTITUDE',
-                       "STATUSTEXT"]
+                       'STATUSTEXT']
         while not killEvent.is_set():   # When killEvent is set, stop looping
             msg = None
             # try:
@@ -189,18 +195,18 @@ class mavlinkInterface(object):
             #     # TODO figure out which exception is periodically showing up
             # Timeout used so it has the chance to notice the stop flag when no data is present
             if msg:
-                self.messages[str(msg.get_type())] = {"message": msg, "time": datetime.now()}
+                self.messages[str(msg.get_type())] = {'message': msg, 'time': datetime.now()}
 
     def __leakDetector(self, killEvent):
         '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''
-        log = getLogger("Status", doPrint=True)
-        log.debug("Leak Detector started")
+        log = getLogger('Status', doPrint=True)
+        log.debug('Leak Detector started')
         while not killEvent.wait(timeout=1):
             if 'STATUSTEXT' in self.messages and 'LEAK' in str(self.messages['STATUSTEXT']['message']).upper():
-                log.error("Leak Detected: " + self.messages['STATUSTEXT']['message'])    # Write the message to the log
+                log.error('Leak Detected: ' + self.messages['STATUSTEXT']['message'])    # Write the message to the log
                 self.dive(0, absolute=True)   # Then run the appropriate response
 
-        log.debug("StatusMonitor Stopping")
+        log.debug('StatusMonitor Stopping')
 
     def __heartbeatSend(self, type=6, autopilot=8, base_mode=192, custom_mode=0, system_status=4, mavlink_version=3):
         '''
@@ -219,7 +225,7 @@ class mavlinkInterface(object):
         mavlink_version     : MAVLink version, not writable by user.
                               Gets added by protocol because of magic data type: uint8_t_mavlink_version (type:uint8_t)
 
-        According to https://discuss.bluerobotics.com/t/sending-mavproxy-messages-from-a-python-program/1515/2,
+        According to https://discuss.bluerobotics.com/t/1515/2,
         "The values of these heartbeat fields is not really important here, I just used the same numbers that QGC uses"
         '''
         self.mavlinkConnection.mav.heartbeat_send(
@@ -231,29 +237,30 @@ class mavlinkInterface(object):
             mavlink_version)    # mavlink_version
 
     def __heartbeatMaintain(self, killEvent):
-        self.log.debug("Heartbeat broadcast started")
+        self.log.debug('Heartbeat broadcast started')
         while not killEvent.wait(timeout=1):
             self.__heartbeatSend()
-        self.log.debug("Heartbeat broadcast stopped")
+        self.log.debug('Heartbeat broadcast stopped')
 
     def __queueManager(self, killEvent):
-        self.log.debug("queueManager starting")
+        self.log.debug('queueManager starting')
         while not killEvent.wait(timeout=1):
             if self.q.qsize() > 0:
                 if self.sem.acquire(blocking=True, timeout=1):
                     try:
                         t = self.q.get(block=False)
                         t.start()
+                        t.join()
                     except Empty:
                         self.sem.release()
 
     # General commands
     def help(self):     # TODO
-        print("Available functions:")
-        print("move(direction, ):")
-        print("stopCurrentTask():")
-        print("setLights(brightness)")
-        print("setFlightMode(mode)")
+        print('Available functions:')
+        print('move(direction, ):')
+        print('stopCurrentTask():')
+        print('setLights(brightness)')
+        print('setFlightMode(mode)')
 
     def stopAllTasks(self):
         # Clear Queue
@@ -275,7 +282,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):    # If sem was able to be acquired
             t.start()                     # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def disarm(self, execMode=None):
@@ -286,7 +293,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):    # If sem was able to be acquired
             t.start()                     # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def setFlightMode(self, flightMode, execMode=None):
@@ -301,10 +308,10 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
-    def move(self, direction, time, throttle=100, absolute=False, execMode=None):
+    def move(self, direction, time, throttle=50, absolute=False, execMode=None):
         '''
         Move horizontally in any direction
 
@@ -319,7 +326,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def move3d(self, throttleX, throttleY, throttleZ, time, execMode=None):
@@ -338,10 +345,10 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
-    def dive(self, depth, throttle=100, absolute=False, execMode=None):
+    def dive(self, depth, throttle=50, absolute=False, execMode=None):
         '''
         Move vertically by a certain distance, or to a specific altitude
 
@@ -354,7 +361,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def diveTime(self, time, throttle, execMode=None):
@@ -370,7 +377,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def surface(self, execMode=None):
@@ -382,7 +389,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def yaw(self, angle, execMode=None):
@@ -396,7 +403,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def yaw2(self, angle, absolute=False, execMode=None):
@@ -409,7 +416,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def gripperOpen(self, execMode=None):
@@ -421,7 +428,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def gripperClose(self, execMode=None):
@@ -433,17 +440,17 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     # Sensor reading commands
     def getBatteryData(self):
         '''Returns a JSON-formatted string containing battery data'''
-        self.log.debug("Fetching battery data")
+        self.log.debug('Fetching battery data')
 
         # Check message availability
         if 'SYS_STATUS' not in self.messages:
-            self.log.warn("SYS_STATUS message not available, waiting 1 sec")
+            self.log.warn('SYS_STATUS message not available, waiting 1 sec')
             sleep(1)
 
         data = {}
@@ -454,11 +461,11 @@ class mavlinkInterface(object):
 
     def getAccelerometerData(self):
         '''Returns a JSON containing Accelerometer Data'''
-        self.log.debug("Fetching Accelerometer Data")
+        self.log.debug('Fetching Accelerometer Data')
 
         # Checking message availability
         if 'RAW_IMU' not in self.messages:
-            self.log.warn("RAW_IMU message not available, waiting 1 sec")
+            self.log.warn('RAW_IMU message not available, waiting 1 sec')
             sleep(1)
 
         data = {}
@@ -469,11 +476,11 @@ class mavlinkInterface(object):
 
     def getGyroscopeData(self):
         '''Returns a JSON containing Gyroscope Data'''
-        self.log.debug("Fetching Gyro Data")
+        self.log.debug('Fetching Gyro Data')
 
         # Checking message availability
         if not self.messages.__contains__('RAW_IMU'):
-            self.log.warn("RAW_IMU message not available, waiting 1 sec")
+            self.log.warn('RAW_IMU message not available, waiting 1 sec')
             sleep(1)
 
         data = {}
@@ -484,9 +491,9 @@ class mavlinkInterface(object):
 
     def getMagnetometerData(self):
         '''Returns a JSON containing Magnetometer Data'''
-        self.log.debug("Fetching magnetometer Data")
+        self.log.debug('Fetching magnetometer Data')
         if not self.messages.__contains__('RAW_IMU'):
-            self.log.warn("RAW_IMU message not available, waiting 1 sec")
+            self.log.warn('RAW_IMU message not available, waiting 1 sec')
             sleep(1)
 
         data = {}
@@ -497,22 +504,22 @@ class mavlinkInterface(object):
 
     def getIMUData(self):
         '''Returns a JSON containing IMU Data'''
-        self.log.debug("Fetching IMU Data")
+        self.log.debug('Fetching IMU Data')
 
         data = {}
-        data["Magnetometer"] = json.loads(self.getMagnetometerData())
-        data["Accelerometer"] = json.loads(self.getAccelerometerData())
-        data["Gyroscope"] = json.loads(self.getGyroscopeData())
+        data['Magnetometer'] = json.loads(self.getMagnetometerData())
+        data['Accelerometer'] = json.loads(self.getAccelerometerData())
+        data['Gyroscope'] = json.loads(self.getGyroscopeData())
         return json.dumps(data)
 
     def getPressureExternal(self):
         ''' Returns the reading of the pressure sensor in Pascals '''
 
-        self.log.debug("Fetching External Pressure")
+        self.log.debug('Fetching External Pressure')
 
         # Check message availability
         if not self.config['messages']['pressureSensorExternal'] in self.messages:
-            self.log.warn("Scaled Pressure message not available, Possible config issue.")
+            self.log.warn('Scaled Pressure message not available, Possible config issue.')
             sleep(1)
 
         # Get the pressure data
@@ -522,7 +529,7 @@ class mavlinkInterface(object):
 
     def getDepth(self):
         '''Returns the depth of the drone in meters as a float'''
-        self.log.debug("Fetching Depth")
+        self.log.debug('Fetching Depth')
 
         # Get variable values from config
         surfacePressure = int(self.config['geodata']['surfacePressure'])    # pascals
@@ -531,7 +538,7 @@ class mavlinkInterface(object):
 
         # Calculate depth
         depth = ((self.getPressureExternal() - surfacePressure) / (fluidDensity * g)) * -1
-        self.log.debug("Depth = " + str(depth))
+        self.log.debug('Depth = ' + str(depth))
         return round(depth, 2)    # Meters
 
     # Configuration Commands
@@ -544,11 +551,11 @@ class mavlinkInterface(object):
         '''
         if not pressure:
             pressure = self.getPressureExternal()
-            self.log.info("Pressure not given, using current pressure of " + str(pressure) +
-                          ". Was " + str(self.config['geodata']['surfacePressure']))
+            self.log.info('Pressure not given, using current pressure of ' + str(pressure) +
+                          '. Was ' + str(self.config['geodata']['surfacePressure']))
         else:
-            self.log.info("Setting surface pressure to " + str(pressure) +
-                          ". Was " + str(self.config['geodata']['surfacePressure']))
+            self.log.info('Setting surface pressure to ' + str(pressure) +
+                          '. Was ' + str(self.config['geodata']['surfacePressure']))
 
         pressure = round(pressure)  # Round to nearest int
 
@@ -565,8 +572,8 @@ class mavlinkInterface(object):
         parameter density: The density of the liquid in which the drone is diving in kg/m^3.
         Freshwater is 1000, salt water is typically 1020-1030
         '''
-        self.log.info("Setting fluidDensity to " + str(density)
-                      + ". Was " + str(self.config['geodata']['fluidDensity']))
+        self.log.info('Setting fluidDensity to ' + str(density)
+                      + '. Was ' + str(self.config['geodata']['fluidDensity']))
 
         self.config.set('geodata', 'fluidDensity', str(density))
         # Write value to configFile
@@ -588,7 +595,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def changeAltitude(self, rate, altitude, execMode=None):
@@ -597,7 +604,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def setLights(self, brightness, execMode=None):
@@ -611,7 +618,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def wait(self, time, execMode=None):
@@ -625,7 +632,7 @@ class mavlinkInterface(object):
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
             t.start()                 # Start the thread
-            if(self.execMode == "synchronous"):
+            if(self.execMode == 'synchronous'):
                 t.join()   # Wait when using synchronous mode
 
     def getHeading(self):

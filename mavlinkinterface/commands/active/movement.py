@@ -45,7 +45,7 @@ def move3d(ml, sem, kill, throttleX, throttleY, throttleZ, time):
         sem.release()
 
 
-def move(ml, sem, kill, direction, time, throttle=100):
+def move(ml, sem, kill, direction, time, throttle=50):
     '''
     Modes the sub in 2 dimensions
     :param direction: The angle (from -180 to 180) to move the sub at
@@ -125,7 +125,7 @@ def diveTime(ml, sem, kill, time, throttle):
         sem.release()
 
 
-def dive(mli, kill, depth, throttle=100, absolute=False):
+def dive(mli, kill, depth, throttle=50, absolute=False):
     '''
     :param depth: The change in depth, negative being down
     :param throttle: Percent of thruster power to use
