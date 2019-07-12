@@ -59,6 +59,7 @@ class mavlinkInterface(object):
                                       'COMMENT_2': 'The density of the diving medium. Pure water is 1000',
                                       'fluidDensity': '1000'}
             self.config['messages'] = {'pressureSensorExternal': 'SCALED_PRESSURE2'}
+            self.config['hardware'] = {'sonarcount': '1'}
             # Save file
             self.config.write((open(self.configPath, 'w')))
 
@@ -111,8 +112,13 @@ class mavlinkInterface(object):
         self.queueThread = Thread(target=self.__queueManager, args=(self.killEvent,))
         self.queueThread.daemon = True   # Kill on program end
         self.queueThread.start()
+
         # Initiate light class
         self.lights = commands.active.lights()
+
+        # Initiate sonar class
+        if self.config['hardware']['sonarcount'] > 0:
+            self.sonar = commands.passive.sonar()
 
         # Validating heartbeat
         self.log.info('Waiting for heartbeat')
@@ -123,17 +129,18 @@ class mavlinkInterface(object):
 
     def __del__(self):
         '''Clean up while exiting'''
-        print('__del__ begin')
         # NOTE: logging does not work in __del__ for some reason
 
         # Stop statusMonitor and DataRefresher processes
-        self.killEvent.set()
-        print('Kill Event Set')
+        try:
+            # Stop child threads
+            self.killEvent.set()
 
-        # Disarm
-        self.__getSemaphore(override=True)
-        commands.active.disarm(self.mavlinkConnection, self.sem)
-        print('disarmed')
+            # Disarm
+            self.__getSemaphore(override=True)
+            commands.active.disarm(self.mavlinkConnection, self.sem)
+        except NameError:
+            pass    # Initializer not finished
 
     # Private functions
     def __getSemaphore(self, mode, target):
@@ -540,6 +547,20 @@ class mavlinkInterface(object):
         depth = ((self.getPressureExternal() - surfacePressure) / (fluidDensity * g)) * -1
         self.log.debug('Depth = ' + str(depth))
         return round(depth, 2)    # Meters
+
+    def getAltitude(self):
+        '''
+        Returns the distance between the sonar sensor and the ground
+        Raises an exception if no sonar sensors are enabled.
+        '''
+        self.log.debug('fetching height')
+        if int(self.config['hardware']['sonarcount']) == 0:
+            # If there are no sonar sensors attached
+            self.log.debug('Sonar disabled in config, raising exception')
+            raise ResourceWarning("This drone does not have an enabled sonar sensor.\n"
+                                  + "If the drone does have a sonar sensor, set the 'sonarcount' entry in the config")
+        sonarData = self.sonar.getMessage()
+        return (float(json.loads(sonarData)['distance']) / 1000)    # Convert to meters
 
     # Configuration Commands
     def setSurfacePressure(self, pressure=None):
