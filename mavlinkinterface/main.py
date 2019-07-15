@@ -114,10 +114,10 @@ class mavlinkInterface(object):
         self.queueThread.start()
 
         # Initiate light class
-        self.lights = commands.active.lights()
+        self.lights = commands.active.lights(self.mavlinkConnection)
 
         # Initiate sonar class
-        if self.config['hardware']['sonarcount'] > 0:
+        if int(self.config['hardware']['sonarcount']) > 0:
             self.sonar = commands.passive.sonar()
 
         # Validating heartbeat
@@ -139,8 +139,8 @@ class mavlinkInterface(object):
             # Disarm
             self.__getSemaphore(override=True)
             commands.active.disarm(self.mavlinkConnection, self.sem)
-        except NameError:
-            pass    # Initializer not finished
+        except (NameError, AttributeError):
+            pass    # Initializer not finished, so no need to clean up after it
 
     # Private functions
     def __getSemaphore(self, mode, target):
@@ -559,8 +559,18 @@ class mavlinkInterface(object):
             self.log.debug('Sonar disabled in config, raising exception')
             raise ResourceWarning("This drone does not have an enabled sonar sensor.\n"
                                   + "If the drone does have a sonar sensor, set the 'sonarcount' entry in the config")
-        sonarData = self.sonar.getMessage()
-        return (float(json.loads(sonarData)['distance']) / 1000)    # Convert to meters
+        sonarData = json.loads(self.sonar.getMessage())
+        if 'distance' not in sonarData:
+            self.log.error('A distance field was not found in the JSON.'
+                           + ' This may be caused by another entity requesting and retrieving from the sensor')
+            raise AttributeError("Distance not found in value returned from sonar sensor")
+        # Restructure the output before returning
+        returnData = {}
+        returnData['altitude'] = sonarData['distance']
+        returnData['confidence'] = sonarData['confidence']
+        returnJson = json.dumps(returnData)
+        self.log.debug('getAltitude now returning ' + returnJson)
+        return returnJson
 
     # Configuration Commands
     def setSurfacePressure(self, pressure=None):

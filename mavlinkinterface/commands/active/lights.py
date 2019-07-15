@@ -8,9 +8,9 @@ class lights(object):
 
     steps = 8   # number of brightness levels the light has
 
-    def __init__(self):
+    def __init__(self, ml):
         for i in range(0, self.steps):
-            self.__down()
+            self.__down(ml)
             sleep(0.05)
         self.level = 0
         self.log = getLogger("Lights")

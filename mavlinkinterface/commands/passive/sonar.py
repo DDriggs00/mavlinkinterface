@@ -1,12 +1,18 @@
+# External
 import socket                   # For communicating via udp
 import json                     # For formatting output
 from brping import pingmessage  # For communication with the sensor
+# Internal
+from mavlinkinterface.logger import getLogger   # For logging
 
 
 # Repurposed from code found here:
 # https://discuss.bluerobotics.com/t/4397/13
 class sonar(object):
     def __init__(self):
+
+        self.log = getLogger('sonar')
+        self.log.debug('Sonar sensor initialization started')
         # set address
         self.address = ("192.168.2.2", 9090)
 
@@ -16,6 +22,8 @@ class sonar(object):
 
         # create pingmessage parser
         self.__parser = pingmessage.PingParser()
+        self.log.debug('Sonar sensor initialization completed')
+        self.log.debug('Note that this does not guarantee a working sonar sensor is attached')
 
     def __request(self, id):
         '''
@@ -27,6 +35,7 @@ class sonar(object):
         msg.request_id = id
         msg.pack_msg_data()
         self.__sock.sendto(msg.msg_data, self.address)
+        self.log.debug('Request sent for message of id: ' + str(id))
 
     # parse data to create ping messages
     def __parse(self, data):
@@ -46,11 +55,13 @@ class sonar(object):
         For a list of messages and what they return, check here:
         https://docs.bluerobotics.com/ping-protocol/pingmessage-ping1d/
         '''
+        self.log.debug('Getting sonar message of id: ' + str(message))
         self.__request(message)
         try:
             data, addr = self.__sock.recvfrom(1024)
         except socket.timeout:  # If unable to retrieve the requested data within 1 sec
-            return "{'Error': 'Timeout when retrieving message'}"
+            self.log.error('A Timeout occurred when retrieving a sonar message of id ' + str(message))
+            raise TimeoutError('A Timeout occurred when retrieving a sonar message of id ' + str(message))
 
         parsedData = self.__parse(data)
 
@@ -58,5 +69,6 @@ class sonar(object):
         returnDict = {}
         for field in pingmessage.payload_dict[parsedData.message_id]['field_names']:
             returnDict[field] = str(getattr(parsedData, field))
-
-        return json.dumps(returnDict)
+        returnJson = json.dumps(returnDict)
+        self.log.debug('getMessage preparing to return ' + returnJson)
+        return json.dumps(returnJson)
