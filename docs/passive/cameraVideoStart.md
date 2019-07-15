@@ -20,7 +20,7 @@ Upon failure, returns the reason for failure.
 ## Examples
 
 ```py
-cameraVideoStart
+MLI.cameraVideoStart()
 # Starts the video feed to record until stopped at 1080p, returns the following JSON
 ```
 
@@ -32,24 +32,20 @@ cameraVideoStart
 ```
 
 ```py
-cameraVideoStart(time = 3600, resolution = '720p')
+MLI.cameraVideoStart(time = 3600, resolution = '720p')
 # Starts the video feed to record for up to 1 hour at 720p, but fails due to a lack of storage space and returns the following JSON
 ```
 
 ```json
 {
     "state":"Failure",
+    "path":"/.../video/2019-05-22T09.48.34.mp4",
     "failReason":"Lack of storage space"
 }
 ```
 
-## Related Mavlink functions
+## Related Mavlink Commands
 
-MAV_CMD_DO_CONTROL_VIDEO  
-MAV_CMD_REQUEST_STORAGE_INFORMATION  
-MAV_CMD_VIDEO_START_CAPTURE  
-MAV_CMD_VIDEO_STOP_CAPTURE  
-MAV_CMD_VIDEO_START_STREAMING (WIP)  
-MAV_CMD_VIDEO_STOP_STREAMING (WIP)  
-MAV_CMD_REQUEST_VIDEO_STREAM_INFORMATION (WIP)  
-MAV_CMD_REQUEST_VIDEO_STREAM_STATUS (WIP)
+- MAV_CMD_DO_CONTROL_VIDEO  
+- MAV_CMD_REQUEST_STORAGE_INFORMATION  
+- MAV_CMD_VIDEO_START_CAPTURE

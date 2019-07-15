@@ -10,6 +10,6 @@ Returns the external pressure on the drone in kiloPascals
 ## Examples
 
 ```py
-getPressureExternal # assuming external pressure of 155.32
+MLI.getPressureExternal() # assuming external pressure of 155.32
 # returns 155.32
 ```

@@ -1,6 +1,6 @@
 # setRecordingInterval( sensor, interval )
 
-Set how long to wait between recording data on the given sensor.  
+Set how long to wait between recording data on the given sensor to a file.  
 NOTE: the sensors only send messages at a rate of 4 hz, so any logging more frequent than that would be wasted
 
 ## Parameters
@@ -21,12 +21,12 @@ Returns void
 ## Examples
 
 ```py
-setRecordingInterval( "Depth", 10 )
-# The depth sensor will now be polled every 10 seconds
+MLI.setRecordingInterval( "Depth", 10 )
+# The depth sensor will now be recorded every 10 seconds
 
-setRecordingInterval( ["Depth", "Temperature", "Magnetometer"], 0 )
+MLI.setRecordingInterval( ["Depth", "Temperature", "Magnetometer"], 0 )
 # The Depth sensor, Temperature, and magnetometer will not be logged
 
-setRecordingInterval( "All", .25 )
+MLI.setRecordingInterval( "All", .25 )
 # All available sensors will be logged 4 times per second
 ```

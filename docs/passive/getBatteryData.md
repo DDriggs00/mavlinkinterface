@@ -19,15 +19,15 @@ Example output:
 }
 ```
 
-<!-- ## Related Mavlink Enumerations
+## Related Mavlink Enumerations
 
-- [MAV_BATTERY_TYPE](https://mavlink.io/en/messages/common.html#MAV_BATTERY_TYPE)
-- [MAV_BATTERY_FUNCTION](https://mavlink.io/en/messages/common.html#MAV_BATTERY_FUNCTION)
-- [MAV_BATTERY_CHARGE_STATE](https://mavlink.io/en/messages/common.html#MAV_BATTERY_CHARGE_STATE)
-- [MAV_SMART_BATTERY_FAULT](https://mavlink.io/en/messages/common.html#MAV_SMART_BATTERY_FAULT)
+- MAV_BATTERY_TYPE
+- MAV_BATTERY_FUNCTION
+- MAV_BATTERY_CHARGE_STATE
+- MAV_SMART_BATTERY_FAULT
 
 ## Related Mavlink Functions
 
-- [BATTERY_STATUS](https://mavlink.io/en/messages/common.html#BATTERY_STATUS)
-- [SMART_BATTERY_INFO](https://mavlink.io/en/messages/common.html#SMART_BATTERY_INFO) (Beta)
-- [SMART_BATTERY_STATUS](https://mavlink.io/en/messages/common.html#SMART_BATTERY_STATUS) (Beta) -->
+- BATTERY_STATUS
+- SMART_BATTERY_INFO (Beta)
+- SMART_BATTERY_STATUS (Beta)

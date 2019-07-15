@@ -1,0 +1,31 @@
+# cameraFeedStart()
+
+Creates a camera feed that the remote computer can access, assuming connectivity.
+
+## Return Values
+
+Returns a JSON-formatted string.  
+Upon Success, returns all information necessary to access the video stream.  
+Upon failure, returns the reason for failure.
+
+## Examples
+
+```py
+MLI.cameraFeedStart()
+# The camera feed is enabled and the following JSON returned
+```
+
+```json
+{
+    "state":"Success",
+    "ip":"192.168.2.2",
+    "port":"8080"
+}
+```
+
+## Related Mavlink Commands
+
+- MAV_CMD_DO_CONTROL_VIDEO
+- MAV_CMD_VIDEO_START_STREAMING (WIP)  
+- MAV_CMD_REQUEST_VIDEO_STREAM_INFORMATION (WIP)  
+- MAV_CMD_REQUEST_VIDEO_STREAM_STATUS (WIP)

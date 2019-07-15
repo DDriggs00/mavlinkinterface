@@ -16,9 +16,9 @@ Returns void
 ## Examples
 
 ```py
-setSurfacePressure()    # While on surface
+MLI.setSurfacePressure()    # While on surface
 # Sets the surfacePressure value to the current exterior pressure
 
-setSurfacePressure( 99000 )
-# Sets the surfacePressure value to 99000 pascals
+MLI.setSurfacePressure(101000)
+# Sets the surfacePressure value to 101000 pascals
 ```

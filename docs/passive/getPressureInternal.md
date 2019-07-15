@@ -10,6 +10,6 @@ Returns the internal pressure on the drone in kiloPascals
 ## Examples
 
 ```py
-getPressureInternal # Assuming internal pressure of 101.325 kpa
+MLI.getPressureInternal() # Assuming internal pressure of 101.325 kpa
 # returns 101.325
 ```
