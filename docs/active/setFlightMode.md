@@ -29,15 +29,15 @@ CIRCLE
 GUIDED
 > Guided mode allows the vehicle's target position to be set dynamically by a ground control station or companion computer. This allows 'Click to Navigate Here' interactions with a map.
 
-### Secret Menu
-
 ACRO
 > Acro (Acrobatic) mode performs angular rate stabilization.
+
+For official documentation, see [here](http://www.ardusub.com/operators-manual/flight-modes.html)
 
 ## Parameters
 
 mode (string):  
-> The mode to use
+> The flight mode to use
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:
