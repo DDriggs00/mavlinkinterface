@@ -97,7 +97,6 @@ Output:
 >
 > time=3:  Move Command 1 Finished  
 
-
 ## Override
 
 In this asynchronous mode, a command returns directly after initiating.  If, upon entering a movement command, there is not currently a movement command executing, this movement command will be immediately executed.  If a movement command is currently executing, the currently executing movement command will be immediately terminated, and this command will be executed.  An example is below.
@@ -177,7 +176,7 @@ MLI.move(90, 10, execMode="override")
 Output:
 > time=0:  Move Command 1 Started  
 > time=0:  Move Command 2 Queued  
-> 
+>
 > time=0:  Move Command 3 Called  
 > time=0:  Queue Cleared  
 > time=0:  Move Command 1 Killed  

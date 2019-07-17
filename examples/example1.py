@@ -1,18 +1,17 @@
 # Startup steps
-
-import mavlinkinterface                     # Import Interface
-mli = mavlinkinterface.mavlinkInterface()   # Create interface object
-mli.arm()                                   # Arm the drone
+import mavlinkinterface                             # Import Interface
+mli = mavlinkinterface.mavlinkInterface('queue')    # Create interface object
+mli.arm()                                           # Arm the drone
 
 # Test groups
 
 # Test Group 0: set surface pressure
 mli.setSurfacePressure()
 
-# Test group 2: lights test 2 - steps using controller emulation
+# Test group 2: lights test
 mli.setLights(100)
 mli.wait(1)
-mli.setLights(100)
+mli.setLights(0)
 
 # Test Group 3: surface and ALT_HOLD - Deep end
 mli.move(0, 3)
