@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime
 from pymavlink import mavutil, mavwp
 from mavlinkinterface.logger import getLogger
 
@@ -123,6 +124,15 @@ class mission(object):
 
         Note: The mission this starts may not be this mission.
         '''
+
+        # Wait for EKF status report flag (the 128 bit) to be zero
+        # https://mavlink.io/en/messages/ardupilotmega.html#EKF_STATUS_FLAGS
+        ekfFlags = self.__mli.messages['MISSION_ITEM_REACHED']['message']
+        mask = 1 << 7
+        while (ekfFlags & mask):
+            ekfFlags = self.__mli.messages['MISSION_ITEM_REACHED']['message']
+
+        # Send mavlink message
         self.__mli.mavlinkConnection.mav.command_long_send(
             self.__mli.mavlinkConnection.target_system,
             self.__mli.mavlinkConnection.target_component,
@@ -140,6 +150,8 @@ class mission(object):
             while 'MISSION_ITEM_REACHED' not in self.__mli.messages:
                 sleep(.1)
             msg = self.__mli.messages['MISSION_ITEM_REACHED']['message']
-            while msg.seq == self.wp.count():
+            timestamp = self.__mli.messages['MISSION_ITEM_REACHED']['time']
+            while msg.seq < (self.wp.count() - 1) or (datetime.now() - timestamp).total_seconds() > 1:
                 sleep(.5)
-                msg = self.__mli.messages['MISSION_REQUEST']['message']
+                msg = self.__mli.messages['MISSION_ITEM_REACHED']['message']
+            print("mission complete")

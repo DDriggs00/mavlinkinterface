@@ -213,6 +213,7 @@ class mavlinkInterface(object):
             readMessages.append('MISSION_ITEM')             # For missions
             readMessages.append('MISSION_ITEM_REACHED')     # For missions
             readMessages.append('MISSION_CURRENT')          # For missions
+            readMessages.append('EKF_STATUS_REPORT')        # For GPS and missions
 
         # filePath = abspath(expanduser("~/logs/mavlinkInterface/"))
 
