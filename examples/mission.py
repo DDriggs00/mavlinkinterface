@@ -10,6 +10,11 @@ mli = mavlinkinterface.mavlinkInterface(execMode="queue")
 
 mli.arm()   # Enable the propellors.
 
+while True:
+    print(mli.messages['GPS_RAW_INT']['message'].to_dict())
+    print(mli.messages['GLOBAL_POSITION_INT']['message'].to_dict())
+    sleep(1)
+
 # Create a mission, passing it the interface that will be used
 myMission = mavlinkinterface.mission(mli)
 
