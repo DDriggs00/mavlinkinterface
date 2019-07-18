@@ -206,8 +206,13 @@ class mavlinkInterface(object):
                         'ATTITUDE',
                         'STATUSTEXT']
         if self.gpsEnabled:
-            readMessages.append('GLOBAL_POSITION_INT')
-            readMessages.append('GPS_RAW_INT')
+            readMessages.append('GPS_RAW_INT')              # Basic GPS
+            readMessages.append('GLOBAL_POSITION_INT')      # Advanced GPS
+            readMessages.append('MISSION_REQUEST')          # For missions
+            readMessages.append('MISSION_ACK')              # For missions
+            readMessages.append('MISSION_ITEM')             # For missions
+            readMessages.append('MISSION_ITEM_REACHED')     # For missions
+            readMessages.append('MISSION_CURRENT')          # For missions
 
         # filePath = abspath(expanduser("~/logs/mavlinkInterface/"))
 
