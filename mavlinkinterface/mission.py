@@ -127,10 +127,10 @@ class mission(object):
 
         # Wait for EKF status report flag (the 128 bit) to be zero
         # https://mavlink.io/en/messages/ardupilotmega.html#EKF_STATUS_FLAGS
-        ekfFlags = self.__mli.messages['MISSION_ITEM_REACHED']['message']
+        ekfFlags = self.__mli.messages['EKF_STATUS_REPORT']['message'].flags
         mask = 1 << 7
         while (ekfFlags & mask):
-            ekfFlags = self.__mli.messages['MISSION_ITEM_REACHED']['message']
+            ekfFlags = self.__mli.messages['EKF_STATUS_REPORT']['message'].flags
 
         # Send mavlink message
         self.__mli.mavlinkConnection.mav.command_long_send(
