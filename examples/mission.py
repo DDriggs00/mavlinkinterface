@@ -15,7 +15,9 @@ myMission = mavlinkinterface.mission(mli)
 
 # Add some waypoints to the mission
 myMission.goToCoordinates(33.810561, -118.394265)
-myMission.goToCoordinates(33.811406, -118.394149)
+myMission.goToCoordinates(33.811006, -118.394265)
+myMission.goToCoordinates(33.811006, -118.394749)
+myMission.goToCoordinates(33.810561, -118.394749)
 myMission.goToCoordinates(33.810561, -118.394265)
 
 # Upload mission to Drone
