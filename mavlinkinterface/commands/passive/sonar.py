@@ -12,7 +12,7 @@ class sonar(object):
     def __init__(self):
 
         self.log = getLogger('sonar')
-        self.log.debug('Sonar sensor initialization started')
+        self.log.trace('Sonar sensor initialization started')
         # set address
         self.address = ("192.168.2.2", 9090)
 
@@ -22,8 +22,8 @@ class sonar(object):
 
         # create pingmessage parser
         self.__parser = pingmessage.PingParser()
-        self.log.debug('Sonar sensor initialization completed')
-        self.log.debug('Note that this does not guarantee a working sonar sensor is attached')
+        self.log.trace('Sonar sensor initialization completed')
+        self.log.trace('Note that this does not guarantee a working sonar sensor is attached')
 
     def __request(self, id):
         '''
@@ -35,7 +35,7 @@ class sonar(object):
         msg.request_id = id
         msg.pack_msg_data()
         self.__sock.sendto(msg.msg_data, self.address)
-        self.log.debug('Request sent for message of id: ' + str(id))
+        self.log.trace('Request sent for message of id: ' + str(id))
 
     # parse data to create ping messages
     def __parse(self, data):
@@ -55,7 +55,7 @@ class sonar(object):
         For a list of messages and what they return, check here:
         https://docs.bluerobotics.com/ping-protocol/pingmessage-ping1d/
         '''
-        self.log.debug('Getting sonar message of id: ' + str(message))
+        self.log.trace('Getting sonar message of id: ' + str(message))
         self.__request(message)
         try:
             data, addr = self.__sock.recvfrom(1024)
@@ -70,5 +70,5 @@ class sonar(object):
         for field in pingmessage.payload_dict[parsedData.message_id]['field_names']:
             returnDict[field] = str(getattr(parsedData, field))
         returnJson = json.dumps(returnDict)
-        self.log.debug('getMessage preparing to return ' + returnJson)
-        return json.dumps(returnJson)
+        self.log.trace('getMessage preparing to return ' + returnJson)
+        return returnJson
