@@ -27,7 +27,7 @@ def move3d(ml, sem, kill, throttleX, throttleY, throttleZ, time):
                 0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                log.debug("Function Move3d with x=" + str(throttleX)
+                log.trace("Function Move3d with x=" + str(throttleX)
                           + ", y=" + str(throttleX)
                           + ", z=" + str(throttleZ)
                           + ", t=" + str(time)
@@ -73,7 +73,7 @@ def move(ml, sem, kill, direction, time, throttle=50):
                 0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                log.debug("Function Move with direction=" + str(direction)
+                log.trace("Function Move with direction=" + str(direction)
                           + ", throttle=" + str(throttle)
                           + ", t=" + str(time)
                           + " was prematurely halted")
@@ -110,7 +110,7 @@ def diveTime(ml, sem, kill, time, throttle):
                 0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                log.debug("Function diveTime with throttle=" + str(throttle)
+                log.trace("Function diveTime with throttle=" + str(throttle)
                           + ", t=" + str(time)
                           + " was prematurely halted")
                 return  # Stop executing function
@@ -171,7 +171,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
                 i += 1
 
                 if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                    log.debug("Function dive with depth=" + str(depth)
+                    log.trace("Function dive with depth=" + str(depth)
                               + ", throttle=" + str(throttle)
                               + ", absolute=" + str(absolute)
                               + " was prematurely halted")
@@ -197,7 +197,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
                 i += 1
 
                 if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                    log.debug("Function dive with depth=" + str(depth)
+                    log.trace("Function dive with depth=" + str(depth)
                               + ", throttle=" + str(throttle)
                               + ", absolute=" + str(absolute)
                               + " was prematurely halted")
@@ -251,7 +251,7 @@ def yawBeta(ml, sem, kill, angle, rate=20, direction=1, relative=1):
             0)          # param 7: Empty
 
         if kill.wait(timeout=((angle / rate) + .5)):     # Check if killEvent has been set
-            log.debug("Function yawBeta with angle=" + str(angle)
+            log.trace("Function yawBeta with angle=" + str(angle)
                       + ", rate=" + str(rate)
                       + ", direction=" + str(direction)
                       + ", relative=" + str(relative)
@@ -276,7 +276,7 @@ def yaw(ml, sem, kill, angle, absolute=False):
             0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
         if kill.wait(timeout=(abs(r) / 200)):   # Check if killEvent has been set
-            log.debug("Function yaw with angle=" + str(angle)
+            log.trace("Function yaw with angle=" + str(angle)
                       + ", absolute=" + str(absolute)
                       + " was prematurely halted")
             return  # Stop executing function
@@ -299,7 +299,7 @@ def wait(ml, sem, kill, time):
                 0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=.25):     # Check if killEvent has been set
-                log.debug("Function wait with time=" + str(time)
+                log.trace("Function wait with time=" + str(time)
                           + " was prematurely halted")
                 return  # Stop executing function
 
@@ -317,7 +317,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
         log = getLogger("Movement")
         log.info("Yawing by " + str(angle) + " absolute=" + str(absolute))
         currentHeading = mli.getHeading()
-        log.debug(currentHeading)
+        log.trace(currentHeading)
         if absolute:
             # In absolute mode, just face toward the input angle
             targetHeading = angle
@@ -338,7 +338,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
                         -250,   # r [ Yaw, with counter-clockwise being negative. ]
                         0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
                 if kill.wait(timeout=0.1):  # Check if killEvent has been set
-                    log.debug("Function yaw2 with angle=" + str(angle)
+                    log.trace("Function yaw2 with angle=" + str(angle)
                               + ", absolute=" + str(absolute)
                               + " was prematurely halted")
                     return  # Stop executing function
@@ -360,7 +360,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
                         0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
                 if kill.wait(timeout=0.1):  # Check if killEvent has been set
-                    log.debug("Function yaw2 with angle=" + str(angle)
+                    log.trace("Function yaw2 with angle=" + str(angle)
                               + ", absolute=" + str(absolute)
                               + " was prematurely halted")
                     return  # Stop executing function
