@@ -43,7 +43,7 @@ To use this library, you must already have an underwater drone set up and workin
 1. If you are diving for the first time in a given body of water, set the surface pressure.
    - [`MLI.setSurfacePressure()`](docs/configuration/setSurfacePressure.md)
 1. If you are diving in a medium that has a different density from fresh water or the last used medium (eg. salt water), set the density
-   - [`MLI.setSurfacePressure(1027)`](docs/configuration/setSurfacePressure.md)
+   - [`MLI.setFluidDensity(1027)`](docs/configuration/setFluidDensity.md)
 1. Arm the Drone
    - [`MLI.arm()`](docs/active/arm.md)
 1. Proceed with script
