@@ -24,7 +24,7 @@ def move3d(ml, sem, kill, throttleX, throttleY, throttleZ, time):
                 y,  # y [left(-1000), right(1000)]
                 z,  # z [down(0), up(1000)]
                 0,  # r [ Yaw, with counter-clockwise being negative. ]
-                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=0.25):     # Check if killEvent has been set
                 log.debug("Function Move3d with x=" + str(throttleX)
@@ -40,7 +40,7 @@ def move3d(ml, sem, kill, throttleX, throttleY, throttleZ, time):
             0,  # y [left(-1000), right(1000)]
             500,  # z [down(0), up(1000)]
             0,  # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
     finally:
         sem.release()
@@ -70,7 +70,7 @@ def move(ml, sem, kill, direction, time, throttle=50):
                 y,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                 500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                 0,      # r [ Yaw, with counter-clockwise being negative. ]
-                0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=0.25):     # Check if killEvent has been set
                 log.debug("Function Move with direction=" + str(direction)
@@ -85,7 +85,7 @@ def move(ml, sem, kill, direction, time, throttle=50):
             0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
             500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
             0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
     finally:
         sem.release()
@@ -107,7 +107,7 @@ def diveTime(ml, sem, kill, time, throttle):
                 0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                 z,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                 0,  # r [ Yaw, with counter-clockwise being negative. ]
-                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=0.25):     # Check if killEvent has been set
                 log.debug("Function diveTime with throttle=" + str(throttle)
@@ -121,7 +121,7 @@ def diveTime(ml, sem, kill, time, throttle):
             0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
             500,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
             0,  # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
     finally:
         sem.release()
 
@@ -162,7 +162,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
                     0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                     z,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                     0,  # r [ Yaw, with counter-clockwise being negative. ]
-                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
                 if i == 12:                                 # If, over the course 3 sec
                     if -0.5 <= oldDepth - currentDepth <= 0.5:  # If depth has not changed
                         stuck = True                        # The drone must either be stuck or miscalibrated
@@ -188,7 +188,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
                     0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                     z,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                     0,  # r [ Yaw, with counter-clockwise being negative. ]
-                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
                 if i == 12:                                 # If, over the course 3 sec
                     if -0.5 <= oldDepth - currentDepth <= 0.5:  # If depth has not changed
                         stuck = True                        # The drone must either be stuck or miscalibrated
@@ -211,7 +211,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
             0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
             500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
             0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
         sleep(0.1)
         # Send the signal again just in case
         mli.mavlinkConnection.mav.manual_control_send(
@@ -220,7 +220,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
             0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
             500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
             0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
         mli.sem.release()
 
 
@@ -273,7 +273,7 @@ def yaw(ml, sem, kill, angle, absolute=False):
             0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
             500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
             r,      # r [ 500 will turn the drone 90 degrees ]
-            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1 ]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
         if kill.wait(timeout=(abs(r) / 200)):   # Check if killEvent has been set
             log.debug("Function yaw with angle=" + str(angle)
@@ -296,7 +296,7 @@ def wait(ml, sem, kill, time):
                 0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                 500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                 0,      # r [ 500 will turn the drone 90 degrees ]
-                0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1 ]
+                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
             if kill.wait(timeout=.25):     # Check if killEvent has been set
                 log.debug("Function wait with time=" + str(time)
@@ -336,7 +336,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
                         0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                         500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                         -250,   # r [ Yaw, with counter-clockwise being negative. ]
-                        0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                        0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
                 if kill.wait(timeout=0.1):  # Check if killEvent has been set
                     log.debug("Function yaw2 with angle=" + str(angle)
                               + ", absolute=" + str(absolute)
@@ -357,7 +357,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
                         0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
                         500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
                         250,    # r [ Yaw, with counter-clockwise being negative. ]
-                        0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+                        0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
                 if kill.wait(timeout=0.1):  # Check if killEvent has been set
                     log.debug("Function yaw2 with angle=" + str(angle)
@@ -375,7 +375,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
         #         0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
         #         500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
         #         250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative (Yaw).]
-        #         0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+        #         0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
         #     sleep(.05)
 
         # Stop thrusting when the desired depth has been reached
@@ -385,6 +385,6 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
             0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
             500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
             0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)      # b [ A bitfield corresponding to the joystick buttons' current state, 1 for pressed, 0 for released. The lowest bit corresponds to Button 1]
+            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
     finally:
         mli.sem.release()
