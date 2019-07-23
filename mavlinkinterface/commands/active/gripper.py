@@ -3,6 +3,8 @@ from time import sleep  # for pressing button for a certain time
 
 def gripperOpen(ml, sem, time):
     try:
+        if time > 2:
+            time = 1.75
         buttons = 1 << 10
         for i in range(int(time * 4)):
             ml.mav.manual_control_send(
@@ -27,6 +29,8 @@ def gripperOpen(ml, sem, time):
 
 def gripperClose(ml, sem, time):
     try:
+        if time > 2:
+            time = 1.75
         buttons = 1 << 9
         for i in range(int(time * 4)):
             ml.mav.manual_control_send(
