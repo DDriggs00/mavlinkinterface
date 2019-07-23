@@ -7,6 +7,10 @@ reads the data from the external temperature sensor
 Returns a float.  
 Returns the temperature read by the temperature sensor in degrees Celsius
 
+### Example output
+
+`26.3`
+
 ## Examples
 
 ```py

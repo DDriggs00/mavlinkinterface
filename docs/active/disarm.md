@@ -23,7 +23,7 @@ Returns void
 
 ```py
 MLI.disarm()
-# The propellers disable
+# The propellers are now disabled
 ```
 
 ## Related Mavlink Commands

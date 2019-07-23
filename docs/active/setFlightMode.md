@@ -57,7 +57,7 @@ Returns void
 ## Example
 
 ```py
-MLI.setFlightMode(ALT_HOLD)
+MLI.setFlightMode('ALT_HOLD')
 # sets the drone to depth hold mode
 ```
 
