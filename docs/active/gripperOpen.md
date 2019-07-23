@@ -5,7 +5,9 @@ Power the gripper arm open for *time* seconds
 ## Parameters
 
 time (float):  
-> The number of seconds to send the "close" signal to the gripper arm
+> The number of seconds to send the "close" signal to the gripper arm  
+> This has a resolution of 1/4 sec.  
+> Fully opening the gripper is 1.75 sec
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:
@@ -27,6 +29,9 @@ Returns void
 ```py
 MLI.gripperOpen(0.5)
 # The grabber arm powers open for 1/2 second
+
+MLI.gripperOpen(1.75)
+# The grabber arm powers open for 1 3/4 seconds
 ```
 
 ## Related Mavlink Messages
