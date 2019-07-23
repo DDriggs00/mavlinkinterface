@@ -40,6 +40,9 @@ MLI.dive(depth = -10)
 MLI.dive(depth = 9, throttle = 100)
 # The drone ascends by 9 meters at 100 percent throttle or until it is obstructed
 
+MLI.dive(depth = -5, absolute=True)
+# The drone ascends or descends until it reaches a depth of 5 meters below the surface
+
 MLI.dive(depth = 5, absolute=True)
 # An ValueError is thrown, indicating that the drone cannot rise above the surface of the water
 ```
