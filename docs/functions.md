@@ -52,6 +52,15 @@ After each update, these functions will be moved to the completed functions cate
 
 - [getAltitude()](passive/getAltitude.md)
   - This takes advantage of the new sonar sensor
+- [gps.getCoordinates()](passive/gps.getCoordinates.md)
+  - This returns GPS Coordinates
+- [mission commands](missions.md)
+  - This allows the user to plan and execute missions
+- [getTemperature()](passive/getTemperature.md)
+  - This returns the temperature as read by the external pressure sensor
+- [setDefaultExecMode( mode )](configuration/setDefaultExecMode.md)
+  - This allows for the changing of the default execution mode after initialization
+  - Note that this requires the queue to be empty and no commands to be executing.
 
 ## Modified Functions (complete)
 
@@ -68,11 +77,9 @@ After each update, these functions will be moved to the completed functions cate
 - [cameraVideoStop()](passive/cameraVideoStop.md)
 - [cameraPhoto( resolution \<optional>, zoom \<optional>, )](passive/cameraPhoto.md)
 - [getPressureInternal()](passive/getPressureInternal.md)
-- [getTemperature()](passive/getTemperature.md)
 - [getAllSensorData()](passive/getAllSensorData.md)
 - [setLoggingLevel( level )](configuration/setLoggingLevel.md)
 - [setRecordingInterval( sensor, interval )](configuration/setRecordingInterval.md)
-- [setDefaultQueueMode( mode )](configuration/setDefaultQueueMode.md)
 - getSonarMap()
 - All GPS-Related functions, including:
   - setGpsMode()

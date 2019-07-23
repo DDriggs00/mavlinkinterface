@@ -702,6 +702,39 @@ class mavlinkInterface(object):
         with open(self.configPath, 'w') as configFile:
             self.config.write(configFile)
 
+    def setDefaultExecMode(self, mode: str):
+        '''
+        Sets the default execution mode to be used when no mode is passed with a command.
+        Allowed modes are:
+
+        - 'queue'
+        - 'override'
+        - 'ignore'
+        - 'synchronous'
+
+        NOTE: This command may only be called when no commands are executing or queued
+        '''
+
+        self.__log.trace('setting default execution mode to ' + mode)
+
+        if mode not in ['synchronous', 'queue', 'ignore', 'override']:
+            self.__log.error("setDefaultExecMode failed: invalid mode")
+            raise ValueError('The execMode parameter must be one of the following:\n'
+                             + ' synchronous, queue, ignore, override')
+
+        if self.q.qsize() > 0:
+            self.__log.error("setDefaultExecMode failed: queue must be empty")
+            raise ResourceWarning('Failed: queue must be empty')
+
+        if not self.sem.acquire(blocking=False):
+            self.__log.error("setDefaultExecMode failed: There must not be any currently executing commands")
+            raise ResourceWarning('Failed: There must not be any currently executing commands')
+        else:
+            self.sem.release()
+
+        self.execMode = mode
+        self.__log.debug('Execution mode successfully set to ' + mode)
+
     # Beta Commands
     def yawBeta(self,
                 angle: float,
