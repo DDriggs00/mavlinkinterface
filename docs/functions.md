@@ -42,8 +42,11 @@ These functions modify configuration values, which persist on the device between
 These functions work as described in the documentation, but to a lesser grade of accuracy. Details on the failings of each one included. These are actively under development
 
 - [dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )](active/dive.md)
+  - Rotates to the depth and stops thrusting, but may pass the depth on momentum
 - [yaw( degrees, absolute \<optional>, execMode \<optional> )](active/yaw.md)
+  - Rotates to the angle and stops thrusting, but may pass the angle on momentum
 - [setLeakAction( action )](configuration/setLeakAction.md)
+  - Currently the leak detection is implemented, but always causes the drone to surface, and cannot be changed at this time.
 
 ## New Functions
 
