@@ -49,15 +49,17 @@ class mavlinkInterface(object):
         if exists(self.configPath):
             self.__log.trace('importing configuration file from path: ' + self.configPath)
             self.config.read(self.configPath)
-        else:   # Config file does not exist
+
+        if not exists(self.configPath) or 'version' not in self.config or self.config['version']['version'] != '1.0':
             # Populate file with Default config options
+            self.config['version'] = {'version': '1.0'}
             self.config['mavlink'] = {'connectionString': 'udp:0.0.0.0:14550'}
             self.config['geodata'] = {'COMMENT_1': 'The pressure in pascals at the surface of the body of water.',
                                       'COMMENT_1B': 'Sea Level is around 101325. Varies day by day',
                                       'surfacePressure': '101325',
                                       'COMMENT_2': 'The density of the diving medium. Pure water is 1000',
                                       'fluidDensity': '1000'}
-            self.config['messages'] = {'pressureSensorExternal': 'SCALED_PRESSURE2'}
+            self.config['messages'] = {'refreshrate': '0.25'}
             self.config['hardware'] = {'sonarcount': '1',
                                        'gps': 'True'}
             # Save file
@@ -66,6 +68,15 @@ class mavlinkInterface(object):
         # Set class variables
         self.__log.trace('Setting class variables')
         self.execMode = execMode
+        self.externalPressureMessage = 'SCALED_PRESSURE2'
+
+        # Handle SITL Mode
+        self.sitl = sitl
+        if sitl:
+            self.__log.warn('================================')
+            self.__log.warn('========SITL MODE ACTIVE========')
+            self.__log.warn('================================')
+            self.externalPressureMessage = 'SCALED_PRESSURE'
 
         # Create variables to contain mavlink message data
         self.messages = {}
@@ -204,7 +215,8 @@ class mavlinkInterface(object):
 
         readMessages = ['SYS_STATUS',
                         'RAW_IMU',
-                        self.config['messages']['pressureSensorExternal'],
+                        'SCALED_PRESSURE',
+                        'SCALED_PRESSURE2',
                         'HEARTBEAT',
                         'ATTITUDE',
                         'STATUSTEXT']
@@ -245,7 +257,7 @@ class mavlinkInterface(object):
         while not killEvent.wait(timeout=1):
             if 'STATUSTEXT' in self.messages and 'LEAK' in str(self.messages['STATUSTEXT']['message']).upper():
                 log.error('Leak Detected: ' + self.messages['STATUSTEXT']['message'])    # Write the message to the log
-                self.dive(0, absolute=True)   # Then run the appropriate response
+                self.surface(execMode='override')   # Then run the appropriate response
 
         log.trace('StatusMonitor Stopping')
 
@@ -354,7 +366,12 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def move(self, direction: float, time: float, throttle: int = 50, absolute: bool = False, execMode: str = None):
+    def move(self,
+             direction: float,
+             time: float,
+             throttle: int = 50,
+             absolute: bool = False,
+             execMode: str = None) -> None:
         '''
         Move horizontally in any direction
 
@@ -462,11 +479,11 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def gripperOpen(self, execMode: str = None) -> None:
+    def gripperOpen(self, time: float, execMode: str = None) -> None:
         '''
         Opens the Gripper Arm
         '''
-        t = Thread(target=commands.active.gripperOpen, args=(self.mavlinkConnection, self.sem,))
+        t = Thread(target=commands.active.gripperOpen, args=(self.mavlinkConnection, self.sem, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -474,11 +491,11 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def gripperClose(self, execMode: str = None) -> None:
+    def gripperClose(self, time: float, execMode: str = None) -> None:
         '''
         Closes the Gripper Arm
         '''
-        t = Thread(target=commands.active.gripperClose, args=(self.mavlinkConnection, self.sem,))
+        t = Thread(target=commands.active.gripperClose, args=(self.mavlinkConnection, self.sem, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -589,12 +606,12 @@ class mavlinkInterface(object):
         self.__log.trace('Fetching External Pressure')
 
         # Check message availability
-        if not self.config['messages']['pressureSensorExternal'] in self.messages:
+        if self.externalPressureMessage not in self.messages:
             self.__log.warn('Scaled Pressure message not available, Possible config issue.')
             sleep(1)
 
         # Get the pressure data
-        pressure_data = self.messages[self.config['messages']['pressureSensorExternal']]['message']
+        pressure_data = self.messages[self.externalPressureMessage]['message']
         self.__log.trace(round(100 * float(pressure_data.press_abs), 2))
         return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
 
@@ -621,12 +638,12 @@ class mavlinkInterface(object):
         self.__log.trace('Fetching Temperature from pressure sensor')
 
         # Check message availability
-        if not self.config['messages']['pressureSensorExternal'] in self.messages:
+        if self.externalPressureMessage not in self.messages:
             self.__log.warn('Scaled Pressure message not available, Possible config issue.')
             sleep(1)
 
         # Get the pressure data
-        pressure_data = self.messages[self.config['messages']['pressureSensorExternal']]['message']
+        pressure_data = self.messages[self.externalPressureMessage]['message']
         tempC = float(pressure_data.temperature) / 100.0
         self.__log.trace('getTemperature returning ' + str(tempC))
         return tempC
@@ -702,7 +719,7 @@ class mavlinkInterface(object):
         with open(self.configPath, 'w') as configFile:
             self.config.write(configFile)
 
-    def setDefaultExecMode(self, mode: str):
+    def setDefaultExecMode(self, mode: str) -> None:
         '''
         Sets the default execution mode to be used when no mode is passed with a command.
         Allowed modes are:
@@ -735,6 +752,9 @@ class mavlinkInterface(object):
         self.execMode = mode
         self.__log.debug('Execution mode successfully set to ' + mode)
 
+    def setLeakAction(self, action: str) -> None:
+        raise NotImplementedError('This function is not yet implemented, but the leak detection is working')
+
     # Beta Commands
     def yawBeta(self,
                 angle: float,
@@ -759,7 +779,7 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def changeAltitude(self, rate, altitude, execMode: str = None):
+    def changeAltitude(self, rate, altitude, execMode: str = None) -> None:
         t = Thread(target=commands.active.changeAltitude, args=(self.mavlinkConnection, self.sem, rate, altitude,))
 
         # Calculate action based on mode
