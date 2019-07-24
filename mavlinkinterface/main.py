@@ -12,6 +12,7 @@ from os.path import abspath             # For config file management
 from os.path import expanduser          # for config file management
 from os.path import exists              # For checking if config file exists
 from pymavlink.mavextra import mag_heading  # Pre-Built function to calculate heading
+import atexit                           # For keeping the queue executing while a script ends
 
 # Local Imports
 from mavlinkinterface.logger import getLogger               # For Logging
@@ -147,6 +148,8 @@ class mavlinkInterface(object):
             sleep(.1)
         self.__log.info('Successfully connected to target.')
         self.__log.trace('__init__ end')
+
+        atexit.register(self.waitQueue)
 
     def __del__(self):
         '''Clean up while exiting'''
@@ -325,7 +328,26 @@ class mavlinkInterface(object):
         self.currentTaskKillEvent.set()
 
     def log(self, message: str) -> None:
+        '''This function writes a message to the program log'''
         self.__log.trace(message)
+
+    def waitQueue(self) -> None:
+        '''
+        This blocks until the current queue has finished executing.
+        This function has no other function
+        '''
+        self.__log.info('Waiting for queue')
+        try:
+            # Wait for queue
+            while self.q.qsize() > 0:
+                sleep(.1)
+
+            # Wait for last item to execute
+            self.sem.acquire(blocking=True)
+
+        except KeyboardInterrupt:
+            # Interrupted by Ctrl+C
+            self.__log.warn('Keyboard interrupt received, aborting command')
 
     # Active commands
     def arm(self, execMode: str = None) -> None:
@@ -523,7 +545,8 @@ class mavlinkInterface(object):
 
         param time: an integer representing the number of seconds to wait
         '''
-        t = Thread(target=commands.active.wait, args=(self.mavlinkConnection, self.sem, time,))
+        t = Thread(target=commands.active.wait,
+                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -548,7 +571,7 @@ class mavlinkInterface(object):
         return json.dumps(data)
 
     def getAccelerometerData(self) -> str:
-        '''Returns a JSON containing Accelerometer Data'''
+        '''Returns a Json-formatted string containing Accelerometer Data'''
         self.__log.trace('Fetching Accelerometer Data')
 
         # Checking message availability
@@ -563,7 +586,7 @@ class mavlinkInterface(object):
         return json.dumps(data)
 
     def getGyroscopeData(self) -> str:
-        '''Returns a JSON containing Gyroscope Data'''
+        '''Returns a Json-formatted string containing Gyroscope Data'''
         self.__log.trace('Fetching Gyro Data')
 
         # Checking message availability
@@ -578,7 +601,7 @@ class mavlinkInterface(object):
         return json.dumps(data)
 
     def getMagnetometerData(self) -> str:
-        '''Returns a JSON containing Magnetometer Data'''
+        '''Returns a Json-formatted string containing Magnetometer Data'''
         self.__log.trace('Fetching magnetometer Data')
         if not self.messages.__contains__('RAW_IMU'):
             self.__log.warn('RAW_IMU message not available, waiting 1 sec')
@@ -591,7 +614,7 @@ class mavlinkInterface(object):
         return json.dumps(data)
 
     def getIMUData(self) -> str:
-        '''Returns a JSON containing IMU Data'''
+        '''Returns a Json-formatted string containing IMU Data'''
         self.__log.trace('Fetching IMU Data')
 
         data = {}
@@ -601,7 +624,7 @@ class mavlinkInterface(object):
         return json.dumps(data)
 
     def getPressureExternal(self) -> float:
-        ''' Returns the reading of the pressure sensor in Pascals '''
+        '''Returns the reading of the pressure sensor in Pascals'''
 
         self.__log.trace('Fetching External Pressure')
 
