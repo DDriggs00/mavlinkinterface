@@ -17,6 +17,7 @@ These functions cause the drone to take a physical action.
 - [setLights( brightness, execMode \<optional> )](active/lights.md)
 - [gripperOpen( time, execMode \<optional> )](active/gripperOpen.md)
 - [gripperClose( time, execMode \<optional> )](active/gripperClose.md)
+- [wait( time, execMode \<optional> )](active/wait.md)
 
 ### Passive
 
