@@ -134,12 +134,16 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
     try:
         if throttle > 75:
             acceptThreshold = .33
+            safetyThreshold = .5
         elif throttle > 50:
             acceptThreshold = .15
+            safetyThreshold = .33
         elif throttle > 25:
             acceptThreshold = .05
+            safetyThreshold = .15
         else:
             acceptThreshold = 0
+            safetyThreshold = .05
 
         log = getLogger("Movement")
         log.info("Diving to depth=" + str(depth)
@@ -173,7 +177,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
                     0,  # r [ Yaw, with counter-clockwise being negative. ]
                     0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
                 if i == 12:                                 # If, over the course 3 sec
-                    if -0.5 <= oldDepth - currentDepth <= 0.5:  # If depth has not changed
+                    if -1 * safetyThreshold <= oldDepth - currentDepth <= safetyThreshold:  # If depth has not changed
                         stuck = True                        # The drone must either be stuck or miscalibrated
                     i = 0
                     oldDepth = currentDepth
@@ -199,7 +203,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
                     0,  # r [ Yaw, with counter-clockwise being negative. ]
                     0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
                 if i == 12:                                 # If, over the course 3 sec
-                    if -0.5 <= oldDepth - currentDepth <= 0.5:  # If depth has not changed
+                    if -1 * safetyThreshold <= oldDepth - currentDepth <= safetyThreshold:  # If depth has not changed
                         stuck = True                        # The drone must either be stuck or miscalibrated
                     i = 0
                     oldDepth = currentDepth
