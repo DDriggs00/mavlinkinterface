@@ -5,7 +5,7 @@ from time import sleep
 from mavlinkinterface.logger import getLogger
 
 
-def move3d(ml, sem, kill, throttleX, throttleY, throttleZ, time):
+def move3d(mcParams, sem, kill, throttleX, throttleY, throttleZ, time):
     '''Throttle functions are integers from -100 to 100'''
     try:
         log = getLogger("Movement")
@@ -13,36 +13,25 @@ def move3d(ml, sem, kill, throttleX, throttleY, throttleZ, time):
                  + " Y=" + str(throttleY)
                  + " Z=" + str(throttleZ)
                  + " for " + str(time) + " seconds")
-        x = 10 * throttleX
-        y = 10 * throttleY
-        z = 5 * throttleZ + 500
 
-        for i in range(0, time * 4):
-            ml.mav.manual_control_send(
-                ml.target_system,
-                x,  # x [back(-1000), forward(1000)]
-                y,  # y [left(-1000), right(1000)]
-                z,  # z [down(0), up(1000)]
-                0,  # r [ Yaw, with counter-clockwise being negative. ]
-                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        # Set the movement parameters
+        mcParams['x'] = 10 * throttleX
+        mcParams['y'] = 10 * throttleY
+        mcParams['z'] = 5 * throttleZ + 500
 
-            if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                log.trace("Function Move3d with x=" + str(throttleX)
-                          + ", y=" + str(throttleX)
-                          + ", z=" + str(throttleZ)
-                          + ", t=" + str(time)
-                          + " was prematurely halted")
-                return  # Stop executing function
-
-        ml.mav.manual_control_send(
-            ml.target_system,
-            0,  # x [back(-1000), forward(1000)]
-            0,  # y [left(-1000), right(1000)]
-            500,  # z [down(0), up(1000)]
-            0,  # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        if kill.wait(timeout=time):     # Check if killEvent has been set
+            log.trace("Function Move3d with x=" + str(throttleX)
+                      + ", y=" + str(throttleX)
+                      + ", z=" + str(throttleZ)
+                      + ", t=" + str(time)
+                      + " was prematurely halted")
+            return  # Stop executing function
 
     finally:
+        # Return movement params to normal (but only those that were modified)
+        mcParams['x'] = 0
+        mcParams['y'] = 0
+        mcParams['z'] = 500
         sem.release()
 
 
@@ -374,7 +363,7 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
         #         0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
         #         0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
         #         500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-        #         250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative (Yaw).]
+        #         250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative (Yaw)]
         #         0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
         #     sleep(.05)
 

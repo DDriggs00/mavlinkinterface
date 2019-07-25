@@ -53,14 +53,15 @@ class mavlinkInterface(object):
 
         if not exists(self.configPath) or 'version' not in self.config or self.config['version']['version'] != '1.0':
             # Populate file with Default config options
-            self.config['version'] = {'version': '1.0'}
+            self.config['version'] = {'version': '1.1'}
             self.config['mavlink'] = {'connectionString': 'udp:0.0.0.0:14550'}
             self.config['geodata'] = {'COMMENT_1': 'The pressure in pascals at the surface of the body of water.',
                                       'COMMENT_1B': 'Sea Level is around 101325. Varies day by day',
                                       'surfacePressure': '101325',
                                       'COMMENT_2': 'The density of the diving medium. Pure water is 1000',
                                       'fluidDensity': '1000'}
-            self.config['messages'] = {'refreshrate': '0.25'}
+            self.config['messages'] = {'refreshrate': '0.25',
+                                       'controlRate': '.1'}
             self.config['hardware'] = {'sonarcount': '1',
                                        'gps': 'True'}
             # Save file
@@ -116,6 +117,18 @@ class mavlinkInterface(object):
         self.heartbeatThread = Thread(target=self.__heartbeatMaintain, args=(self.killEvent,))
         self.heartbeatThread.daemon = True  # Kill on program end
         self.heartbeatThread.start()
+
+        # start Manual control process
+        self.manualControlParams = {
+            'x': 0,     # X-Axis thrust [Range: -1000-1000; Back=-1000, Forward=1000, 0 = No 'forward' thrust]
+            'y': 0,     # Y-Axis thrust [Range: -1000-1000; Left=-1000, Right=1000, 0 = No 'sideways' thrust]
+            'z': 500,   # Z-Axis thrust [Range: -1000-1000; Left=-1000, Up=1000, 500 = No vertical thrust]
+            'r': 0,     # Rotation [Range: -1000-1000; Left=-1000, Right=1000, 0 = No rotational thrust]
+            'b': 0      # A bitfield representing controller buttons pressed,(use 1 << btn# to activate button)
+        }
+        self.manualControlThread = Thread(target=self.__manualControlMaintain, args=(self.killEvent,))
+        self.manualControlThread.daemon = True  # Kill on program end
+        self.manualControlThread.start()
 
         # start leak detection
         self.leakDetectorThread = Thread(target=self.__leakDetector, args=(self.killEvent,))
@@ -298,9 +311,41 @@ class mavlinkInterface(object):
             system_status,      # system_status
             mavlink_version)    # mavlink_version
 
+    def __manualControlSend(self) -> None:
+        '''
+        Sends a manual control message based on the dict self.manualControlParams
+
+        Detailed description of MANUAL_CONTROL Message
+        Name: MANUAL_CONTROL ( #69 )
+        Usage: This message provides an API for manually controlling the vehicle using standard joystick axes.
+        It is typically used with a joystick-like input device, but can also be used for other forms of manual control.
+        X, Y, Z, and r axes can be disabled with a value of INT16_MAX (Not used in this case).
+
+        Field Name  Type	    Description
+        x	        int16_t	    X-Axis thrust/Pitch [Range: -1000-1000; Back=-1000, Forward=1000, 0 = No thrust]
+        y	        int16_t	    Y-Axis thrust/Roll [Range: -1000-1000; Left=-1000, Right=1000, 0 = No thrust]
+        z	        int16_t	    Z-Axis thrust/Lift [Range: -1000-1000; Left=-1000, Up=1000, 500 = No thrust]
+        r	        int16_t	    R-axis Thrust/Rotation [Range: -1000-1000; Left=-1000, Right=1000, 0 = No thrust]
+        buttons	    uint16_t	A bitfield representing controller buttons pressed,(use 1 << btn# to activate button)
+        '''
+        self.mavlinkConnection.mav.manual_control_send(
+            self.mavlinkConnection.target_system,
+            self.manualControlParams['x'],  # X-Axis thrust
+            self.manualControlParams['y'],  # Y-Axis thrust
+            self.manualControlParams['z'],  # Z-Axis thrust
+            self.manualControlParams['r'],  # R-Axis thrust
+            self.manualControlParams['b']   # Button bitmap
+        )
+
     def __heartbeatMaintain(self, killEvent: Event) -> None:
         self.__log.trace('Heartbeat broadcast started')
         while not killEvent.wait(timeout=1):
+            self.__heartbeatSend()
+        self.__log.trace('Heartbeat broadcast stopped')
+
+    def __manualControlMaintain(self, killEvent: Event) -> None:
+        self.__log.trace('Manual Control broadcast started')
+        while not killEvent.wait(timeout=(float(self.config['messages']['controlRate']))):
             self.__heartbeatSend()
         self.__log.trace('Heartbeat broadcast stopped')
 
