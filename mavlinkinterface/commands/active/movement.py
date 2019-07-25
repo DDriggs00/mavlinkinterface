@@ -132,6 +132,15 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
     :param throttle: Percent of thruster power to use
     '''
     try:
+        if throttle > 75:
+            acceptThreshold = .33
+        elif throttle > 50:
+            acceptThreshold = .15
+        elif throttle > 25:
+            acceptThreshold = .05
+        else:
+            acceptThreshold = 0
+
         log = getLogger("Movement")
         log.info("Diving to depth=" + str(depth)
                  + " at throttle=" + str(throttle)
@@ -154,7 +163,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
         # If the drone is below the desired depth
         if currentDepth > targetDepth:     # Need to descend
             z = 500 - (throttle * 5)
-            while currentDepth > targetDepth + .33 and not stuck:     # Until within 0.5m of target, thrust
+            while currentDepth > targetDepth + acceptThreshold and not stuck:     # Until within 0.5m of target, thrust
                 currentDepth = mli.getDepth()
                 mli.mavlinkConnection.mav.manual_control_send(
                     mli.mavlinkConnection.target_system,
@@ -180,7 +189,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
         # If the drone is below the desired depth
         elif currentDepth < targetDepth:
             z = 500 + (throttle * 5)
-            while currentDepth < targetDepth + .33 and not stuck:    # Until within 0.5m of target, thrust
+            while currentDepth < targetDepth + acceptThreshold and not stuck:    # Until within 0.5m of target, thrust
                 currentDepth = mli.getDepth()
                 mli.mavlinkConnection.mav.manual_control_send(
                     mli.mavlinkConnection.target_system,
