@@ -232,7 +232,7 @@ def yawBeta(ml, sem, kill, angle, rate=20, direction=1, relative=1):
         sem.release()
 
 
-def yaw(mcParams, sem, kill, angle, absolute=False):
+def yawBasic(mcParams, sem, kill, angle, absolute=False):
     try:
         log = getLogger("Movement")
         log.info("Yawing by " + str(angle) + " degrees, absolute: " + str(absolute))
@@ -264,9 +264,10 @@ def wait(ml, sem, kill, time):
         sem.release()
 
 
-def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to calculation
+def yaw(mli, kill, angle, absolute=False):   # TODO add rotational momentum to calculation
     '''
     Rotates the drone by *angle* degrees
+    Note: This will never yaw by more than 180 degrees
 
     :param angle: The change in heading (in degrees), with negative being counterclockwise
     '''
@@ -277,50 +278,54 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
         currentHeading = mli.getHeading()
         if absolute:
             # In absolute mode, just face toward the input angle
-            targetHeading = angle
+            targetHeading = angle % 360
         else:   # relative
             # In relative mode, yaw by the input angle
-            targetHeading = angle + currentHeading
-        print('current: ' + str(currentHeading))
-        print('target: ' + str(targetHeading))
-        if currentHeading > targetHeading:  # Counterclockwise
+            targetHeading = (angle + currentHeading) % 360
 
-            mli.manualControlParams['r'] = -500
-            while not kill.wait(timeout=.25):
-                # Until within 30 degrees of target, yaw at 50%
-                if mli.getHeading() < targetHeading + 30:
-                    break
+        log.trace('yaw: current: ' + str(currentHeading))
+        log.trace('yaw: target: ' + str(targetHeading))
 
-            mli.manualControlParams['r'] = -250
-            while not kill.wait(timeout=.25):
-                # Until within 10 degrees of target, yaw at 25%
-                if mli.getHeading() < targetHeading + 10:
-                    break
-
-            mli.manualControlParams['r'] = 250
-            while not kill.wait(timeout=.1):
-                # Cancel momentum
-                if mli.messages['ATTITUDE']['message'].yawspeed > -0.01:
-                    break
-
-        elif currentHeading < targetHeading:  # Clockwise
+        if (targetHeading - currentHeading) % 360 <= 180:  # Clockwise
 
             mli.manualControlParams['r'] = 500
             while not kill.wait(timeout=.25):
                 # Until within 30 degrees of target, yaw at 50%
-                if mli.getHeading() > targetHeading - 30:
+                if (targetHeading - mli.getHeading()) % 360 <= 30:
                     break
 
             mli.manualControlParams['r'] = 250
             while not kill.wait(timeout=.25):
                 # Until within 10 degrees of target, yaw at 25%
-                if mli.getHeading() > targetHeading - 10:
+                if ((targetHeading - mli.getHeading()) % 360 <= 5
+                        or (targetHeading - mli.getHeading()) % 360 > 330):
                     break
 
             mli.manualControlParams['r'] = -250
             while not kill.wait(timeout=.1):
                 # Cancel momentum
                 if mli.messages['ATTITUDE']['message'].yawspeed < 0.01:
+                    break
+
+        elif (targetHeading - currentHeading) % 360 > 180:  # Counterclockwise
+
+            mli.manualControlParams['r'] = -500
+            while not kill.wait(timeout=.25):
+                # Until within 30 degrees of target, yaw at 50%
+                if (targetHeading - mli.getHeading()) % 360 > 330:
+                    break
+
+            mli.manualControlParams['r'] = -250
+            while not kill.wait(timeout=.25):
+                # Until within 10 degrees of target, yaw at 25%
+                if ((targetHeading - mli.getHeading()) % 360 > 355
+                        or (targetHeading - mli.getHeading()) % 360 < 30):
+                    break
+
+            mli.manualControlParams['r'] = 250
+            while not kill.wait(timeout=.1):
+                # Cancel momentum
+                if mli.messages['ATTITUDE']['message'].yawspeed > -0.01:
                     break
 
     finally:

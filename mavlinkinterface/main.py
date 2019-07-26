@@ -151,7 +151,7 @@ class mavlinkInterface(object):
         # self.dataRecorderThread.start()self.messages['ATTITUDE']['message'].to_dict()['mavpackettype']
 
         # Initiate light class
-        self.lights = commands.active.lights(self.mavlinkConnection)
+        self.lights = commands.active.lights(self)
 
         # Initiate sonar class
         if int(self.config['hardware']['sonarcount']) > 0:
@@ -538,12 +538,12 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def yaw2(self, angle: float, absolute=False, execMode: str = None) -> None:
+    def yawBasic(self, angle: float, absolute=False, execMode: str = None) -> None:
         '''Rotates the drone around the Z-Axis
 
         angle: distance to rotate in degrees
         '''
-        t = Thread(target=commands.active.yaw2, args=(self, self.currentTaskKillEvent, angle, absolute,))
+        t = Thread(target=commands.active.yawBasic, args=(self, self.currentTaskKillEvent, angle, absolute,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -581,7 +581,7 @@ class mavlinkInterface(object):
 
         param brightness: the percentage of full brightness (rounded to the nearest step) to set the lights to
         '''
-        t = Thread(target=self.lights.set, args=(self.mavlinkConnection, self.sem, brightness,))
+        t = Thread(target=self.lights.set, args=(self, self.sem, brightness,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -680,12 +680,25 @@ class mavlinkInterface(object):
 
         # Check message availability
         if self.externalPressureMessage not in self.messages:
-            self.__log.warn('Scaled Pressure message not available, Possible config issue.')
             sleep(1)
 
         # Get the pressure data
         pressure_data = self.messages[self.externalPressureMessage]['message']
-        self.__log.trace(round(100 * float(pressure_data.press_abs), 2))
+        self.__log.rdata(round(100 * float(pressure_data.press_abs), 2))
+        return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
+
+    def getPressureInternal(self) -> float:
+        '''Returns the reading of the internal pressure sensor in Pascals'''
+
+        self.__log.trace('Fetching External Pressure')
+
+        # Check message availability
+        if 'SCALED_PRESSURE' not in self.messages:
+            sleep(1)
+
+        # Get the pressure data
+        pressure_data = self.messages['SCALED_PRESSURE']['message']
+        self.__log.rdata('getInternalPressure about to return ' + str(round(100 * float(pressure_data.press_abs), 2)))
         return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
 
     def getDepth(self) -> float:
