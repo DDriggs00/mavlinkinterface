@@ -1,6 +1,5 @@
 from pymavlink import mavutil           # for everything
 from math import pi, sin, cos           # for movement direction
-from time import sleep
 
 from mavlinkinterface.logger import getLogger
 
@@ -19,68 +18,68 @@ def move3d(mcParams, sem, kill, throttleX, throttleY, throttleZ, time):
         mcParams['y'] = 10 * throttleY
         mcParams['z'] = 5 * throttleZ + 500
 
-        if kill.wait(timeout=time):     # Check if killEvent has been set
+        # Wait
+        if kill.wait(timeout=time):
+            # if killed
             log.trace("Function Move3d with x=" + str(throttleX)
                       + ", y=" + str(throttleX)
                       + ", z=" + str(throttleZ)
                       + ", t=" + str(time)
                       + " was prematurely halted")
-            return  # Stop executing function
 
     finally:
         # Return movement params to normal (but only those that were modified)
         mcParams['x'] = 0
         mcParams['y'] = 0
         mcParams['z'] = 500
+
         sem.release()
+        log.trace('move3d ended')
 
 
-def move(ml, sem, kill, direction, time, throttle=50):
+def move(mcParams, sem, kill, direction, time, throttle=50):
     '''
-    Modes the sub in 2 dimensions
-    :param direction: The angle (from -180 to 180) to move the sub at
+    Modes the drone in 2 dimensions
+
+    :param direction: The angle (from -180 to 180) at which to move the drone
     :param time: The number of seconds to thrust for
     :param throttle: The percentage of total thrust to use
     '''
     try:
         log = getLogger("Movement")
         log.info("Moving in direction: " + str(direction)
-                 + " at " + str(throttle) + "% throttle for " + str(time) + " seconds")
+                 + " at " + str(throttle) + "% throttle"
+                 + " for " + str(time) + " seconds")
+
+        # Calculate x and y values
         x = cos(pi * direction / 180)
         y = sin(pi * direction / 180)
         scaler = (1000 / max(abs(x), abs(y))) * (throttle / 100)
         x = round(x * scaler)
         y = round(y * scaler)
 
-        for i in range(0, (time * 4)):
-            ml.mav.manual_control_send(
-                ml.target_system,
-                x,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-                y,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                0,      # r [ Yaw, with counter-clockwise being negative. ]
-                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        # Set movement parameters
+        mcParams['x'] = x
+        mcParams['y'] = y
 
-            if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                log.trace("Function Move with direction=" + str(direction)
-                          + ", throttle=" + str(throttle)
-                          + ", t=" + str(time)
-                          + " was prematurely halted")
-                return  # Stop executing function
-
-        ml.mav.manual_control_send(
-            ml.target_system,
-            0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-            0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-            500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-            0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        # wait
+        if kill.wait(timeout=time):
+            # If killed
+            log.trace("Function Move with direction=" + str(direction)
+                      + ", throttle=" + str(throttle)
+                      + ", t=" + str(time)
+                      + " was prematurely halted")
 
     finally:
+        # Reset movement parameters
+        mcParams['x'] = 0
+        mcParams['y'] = 0
+
         sem.release()
+        log.trace('move ended')
 
 
-def diveTime(ml, sem, kill, time, throttle):
+def diveTime(mcParams, sem, kill, time, throttle):
     '''
     :param time: the number of seconds to power the thrusters
     :param throttle: Throttle value is from -100 to 100, with negative indicating down
@@ -88,31 +87,23 @@ def diveTime(ml, sem, kill, time, throttle):
     try:
         log = getLogger("Movement")
         log.info("Diving at " + str(throttle) + "% throttle for " + str(time) + " seconds")
-        z = (throttle * 5) + 500
-        for i in range(0, (time * 4)):
-            ml.mav.manual_control_send(
-                ml.target_system,
-                0,  # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-                0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                z,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                0,  # r [ Yaw, with counter-clockwise being negative. ]
-                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
 
-            if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                log.trace("Function diveTime with throttle=" + str(throttle)
-                          + ", t=" + str(time)
-                          + " was prematurely halted")
-                return  # Stop executing function
+        # set movement parameters
+        mcParams['z'] = (throttle * 5) + 500
 
-        ml.mav.manual_control_send(
-            ml.target_system,
-            0,  # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-            0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-            500,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-            0,  # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        # wait
+        if kill.wait(timeout=time):
+            # if killed
+            log.trace("Function diveTime with throttle=" + str(throttle)
+                      + ", t=" + str(time)
+                      + " was prematurely halted")
+
     finally:
+        # reset movement parameters
+        mcParams['z'] = 500
+
         sem.release()
+        log.trace('diveTime ended')
 
 
 def dive(mli, kill, depth, throttle=50, absolute=False):
@@ -125,8 +116,23 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
         log.info("Diving to depth=" + str(depth)
                  + " at throttle=" + str(throttle)
                  + "% power, absolute=" + str(absolute))
-        currentDepth = mli.getDepth()
 
+        # set depth acceptance and safety thresholds
+        if throttle > 75:
+            acceptThreshold = .33
+            safetyThreshold = .5
+        elif throttle > 50:
+            acceptThreshold = .15
+            safetyThreshold = .33
+        elif throttle > 25:
+            acceptThreshold = .05
+            safetyThreshold = .15
+        else:
+            acceptThreshold = 0
+            safetyThreshold = .08
+
+        # set target depth
+        currentDepth = mli.getDepth()
         if absolute:
             # In absolute mode, just go to a depth
             targetDepth = depth
@@ -137,80 +143,55 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
         if targetDepth > 0:
             log.error("Cannot Rise above the Surface, aborting")
             raise ValueError("Cannot Rise above the Surface, aborting command")
+
+        # set movement parameters
+        if currentDepth > targetDepth + acceptThreshold:    # Need to descend
+            descend = True
+            mli.manualControlParams['z'] = 500 - (throttle * 5)
+        elif currentDepth < targetDepth - acceptThreshold:  # Need to ascend
+            descend = False
+            mli.manualControlParams['z'] = 500 + (throttle * 5)
+        else:
+            log.trace('Already at desired depth')
+            return
+
         i = 0
         oldDepth = currentDepth
-        stuck = False
-        # If the drone is below the desired depth
-        if currentDepth > targetDepth:     # Need to descend
-            z = 500 - (throttle * 5)
-            while currentDepth > targetDepth + .33 and not stuck:     # Until within 0.5m of target, thrust
-                currentDepth = mli.getDepth()
-                mli.mavlinkConnection.mav.manual_control_send(
-                    mli.mavlinkConnection.target_system,
-                    0,  # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-                    0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                    z,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                    0,  # r [ Yaw, with counter-clockwise being negative. ]
-                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
-                if i == 12:                                 # If, over the course 3 sec
-                    if -0.5 <= oldDepth - currentDepth <= 0.5:  # If depth has not changed
-                        stuck = True                        # The drone must either be stuck or miscalibrated
-                    i = 0
-                    oldDepth = currentDepth
-                i += 1
+        while not kill.wait(timeout=0.25):
 
-                if kill.wait(timeout=0.25):     # Check if killEvent has been set
+            currentDepth = mli.getDepth()
+
+            # if drone has descended or ascended far enough
+            if descend and currentDepth < targetDepth + acceptThreshold:
+                break
+            if not descend and currentDepth > targetDepth - acceptThreshold:
+                break
+
+            if i == 12:     # every 3 seconds
+                # if the drone has been thrusting for 3 seconds, but has not moved
+                if abs(oldDepth - currentDepth) <= safetyThreshold:
                     log.trace("Function dive with depth=" + str(depth)
                               + ", throttle=" + str(throttle)
                               + ", absolute=" + str(absolute)
-                              + " was prematurely halted")
-                    return  # Stop executing function
+                              + " was prematurely halted due to a lack of movement")
+                    break
 
-        # If the drone is below the desired depth
-        elif currentDepth < targetDepth:
-            z = 500 + (throttle * 5)
-            while currentDepth < targetDepth + .33 and not stuck:    # Until within 0.5m of target, thrust
-                currentDepth = mli.getDepth()
-                mli.mavlinkConnection.mav.manual_control_send(
-                    mli.mavlinkConnection.target_system,
-                    0,  # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-                    0,  # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                    z,  # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                    0,  # r [ Yaw, with counter-clockwise being negative. ]
-                    0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
-                if i == 12:                                 # If, over the course 3 sec
-                    if -0.5 <= oldDepth - currentDepth <= 0.5:  # If depth has not changed
-                        stuck = True                        # The drone must either be stuck or miscalibrated
-                    i = 0
-                    oldDepth = currentDepth
-                i += 1
+                i = 0
+                oldDepth = currentDepth
 
-                if kill.wait(timeout=0.25):     # Check if killEvent has been set
-                    log.trace("Function dive with depth=" + str(depth)
-                              + ", throttle=" + str(throttle)
-                              + ", absolute=" + str(absolute)
-                              + " was prematurely halted")
-                    return  # Stop executing function
+            i += 1
 
+        if kill.is_set():
+            log.trace("Function dive with depth=" + str(depth)
+                      + ", throttle=" + str(throttle)
+                      + ", absolute=" + str(absolute)
+                      + " was prematurely halted")
     finally:
-        # Stop thrusting when the desired depth has been reached
-        mli.mavlinkConnection.mav.manual_control_send(
-            mli.mavlinkConnection.target_system,
-            0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-            0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-            500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-            0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
-        sleep(0.1)
-        # Send the signal again just in case
-        mli.mavlinkConnection.mav.manual_control_send(
-            mli.mavlinkConnection.target_system,
-            0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-            0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-            500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-            0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        # reset movement parameters
+        mli.manualControlParams['z'] = 500
+
         mli.sem.release()
+        log.trace('Dive function ended')
 
 
 def surface(mli, kill):  # TODO
@@ -251,46 +232,33 @@ def yawBeta(ml, sem, kill, angle, rate=20, direction=1, relative=1):
         sem.release()
 
 
-def yaw(ml, sem, kill, angle, absolute=False):
+def yaw(mcParams, sem, kill, angle, absolute=False):
     try:
         log = getLogger("Movement")
-        log.info("Yawing by " + str(angle) + " degrees")
-        r = int(angle * (50 / 9))
-        ml.mav.manual_control_send(
-            ml.target_system,
-            0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-            0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-            500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-            r,      # r [ 500 will turn the drone 90 degrees ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        log.info("Yawing by " + str(angle) + " degrees, absolute: " + str(absolute))
 
-        if kill.wait(timeout=(abs(r) / 200)):   # Check if killEvent has been set
+        mcParams['r'] = int(angle * (50 / 9))
+
+        if kill.wait(timeout=(abs(int(angle * (50 / 9))) / 200)):   # Check if killEvent has been set
             log.trace("Function yaw with angle=" + str(angle)
                       + ", absolute=" + str(absolute)
                       + " was prematurely halted")
-            return  # Stop executing function
 
     finally:
+        # reset movement parameters
+        mcParams['r'] = 0
+
         sem.release()
+        log.trace('yawTime ended')
 
 
 def wait(ml, sem, kill, time):
     try:
         log = getLogger("Movement")
-        log.info("Waiting (with manual control set) for " + str(time) + " seconds")
-        for i in range(0, time * 4):
-            ml.mav.manual_control_send(
-                ml.target_system,
-                0,      # x [ forward(1000)-backward(-1000) ]
-                0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                0,      # r [ 500 will turn the drone 90 degrees ]
-                0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+        log.warning("########## DEPRECATION WARNING ##########")
+        log.warning("Wait function is deprecated, use sleep instead.")
 
-            if kill.wait(timeout=.25):     # Check if killEvent has been set
-                log.trace("Function wait with time=" + str(time)
-                          + " was prematurely halted")
-                return  # Stop executing function
+        kill.wait(timeout=time)
 
     finally:
         sem.release()
@@ -305,75 +273,59 @@ def yaw2(mli, kill, angle, absolute=False):   # TODO add rotational momentum to 
     try:
         log = getLogger("Movement")
         log.info("Yawing by " + str(angle) + " absolute=" + str(absolute))
+
         currentHeading = mli.getHeading()
-        log.trace(currentHeading)
         if absolute:
             # In absolute mode, just face toward the input angle
             targetHeading = angle
         else:   # relative
             # In relative mode, yaw by the input angle
             targetHeading = angle + currentHeading
-
-        # If the drone must rotate
+        print('current: ' + str(currentHeading))
+        print('target: ' + str(targetHeading))
         if currentHeading > targetHeading:  # Counterclockwise
-            i = 0
-            while currentHeading > targetHeading + 2:     # Until within 2 degrees of target, yaw at 25%
-                if not i % 10:
-                    mli.mavlinkConnection.mav.manual_control_send(
-                        mli.mavlinkConnection.target_system,
-                        0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-                        0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                        500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                        -250,   # r [ Yaw, with counter-clockwise being negative. ]
-                        0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
-                if kill.wait(timeout=0.1):  # Check if killEvent has been set
-                    log.trace("Function yaw2 with angle=" + str(angle)
-                              + ", absolute=" + str(absolute)
-                              + " was prematurely halted")
-                    return  # Stop executing function
 
-                i += 1
-                currentHeading = mli.getHeading()
+            mli.manualControlParams['r'] = -500
+            while not kill.wait(timeout=.25):
+                # Until within 30 degrees of target, yaw at 50%
+                if mli.getHeading() < targetHeading + 30:
+                    break
 
-        # If the drone must rotate clockwise
-        if currentHeading < targetHeading:  # Clockwise
-            i = 0
-            while currentHeading < targetHeading - 2:     # Until within 2 degrees of target, yaw at 25%
-                if not i % 10:
-                    mli.mavlinkConnection.mav.manual_control_send(
-                        mli.mavlinkConnection.target_system,
-                        0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-                        0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-                        500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-                        250,    # r [ Yaw, with counter-clockwise being negative. ]
-                        0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+            mli.manualControlParams['r'] = -250
+            while not kill.wait(timeout=.25):
+                # Until within 10 degrees of target, yaw at 25%
+                if mli.getHeading() < targetHeading + 10:
+                    break
 
-                if kill.wait(timeout=0.1):  # Check if killEvent has been set
-                    log.trace("Function yaw2 with angle=" + str(angle)
-                              + ", absolute=" + str(absolute)
-                              + " was prematurely halted")
-                    return  # Stop executing function
+            mli.manualControlParams['r'] = 250
+            while not kill.wait(timeout=.1):
+                # Cancel momentum
+                if mli.messages['ATTITUDE']['message'].yawspeed > -0.01:
+                    break
 
-                i += 1
-                currentHeading = mli.getHeading()
+        elif currentHeading < targetHeading:  # Clockwise
 
-        # while mli.messages['ATTITUDE'].message.yawspeed > 0.0012:
-        #     mli.mavlinkConnection.mav.manual_control_send(
-        #         mli.mavlinkConnection.target_system,
-        #         0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-        #         0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-        #         500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-        #         250,    # r [ corresponds to a twisting of the joystick, with counter-clockwise being negative (Yaw)]
-        #         0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
-        #     sleep(.05)
+            mli.manualControlParams['r'] = 500
+            while not kill.wait(timeout=.25):
+                # Until within 30 degrees of target, yaw at 50%
+                if mli.getHeading() > targetHeading - 30:
+                    break
 
-        # Stop thrusting when the desired depth has been reached
-        mli.mavlinkConnection.mav.manual_control_send(
-            mli.mavlinkConnection.target_system,
-            0,      # x [ Range: -1000-1000; backward=-1000, forward=1000, 0 = No X-Axis thrust ]
-            0,      # y [ Range: -1000-1000; Left=-1000, Right=1000, 0 = No Y-Axis thrust ]
-            500,    # z [ Range: 0-1000; 0=down, 1000=up; 500 = no vertical thrust ]
-            0,      # r [ Yaw, with counter-clockwise being negative. ]
-            0)  # b [ A bitfield corresponding to the joystick buttons' current state, 1 == pressed]
+            mli.manualControlParams['r'] = 250
+            while not kill.wait(timeout=.25):
+                # Until within 10 degrees of target, yaw at 25%
+                if mli.getHeading() > targetHeading - 10:
+                    break
+
+            mli.manualControlParams['r'] = -250
+            while not kill.wait(timeout=.1):
+                # Cancel momentum
+                if mli.messages['ATTITUDE']['message'].yawspeed < 0.01:
+                    break
+
     finally:
+        # reset yaw control to zero
+        mli.manualControlParams['r'] = 0
+
         mli.sem.release()
+        log.trace('yaw command ended')
