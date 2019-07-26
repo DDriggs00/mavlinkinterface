@@ -26,6 +26,8 @@ class mavlinkInterface(object):
     This is the main interface to Mavlink. All calls will be made through this object.
     '''
 
+    version = '1.1'
+
     # Internal Commands
     def __init__(self, execMode: str, sitl=False):
         '''
@@ -51,16 +53,20 @@ class mavlinkInterface(object):
             self.__log.trace('importing configuration file from path: ' + self.configPath)
             self.config.read(self.configPath)
 
-        if not exists(self.configPath) or 'version' not in self.config or self.config['version']['version'] != '1.0':
+        if (not exists(self.configPath)
+                or 'version' not in self.config
+                or self.config['version']['version'] != self.version):
+
             # Populate file with Default config options
-            self.config['version'] = {'version': '1.0'}
+            self.config['version'] = {'version': self.version}
             self.config['mavlink'] = {'connectionString': 'udp:0.0.0.0:14550'}
             self.config['geodata'] = {'COMMENT_1': 'The pressure in pascals at the surface of the body of water.',
                                       'COMMENT_1B': 'Sea Level is around 101325. Varies day by day',
                                       'surfacePressure': '101325',
                                       'COMMENT_2': 'The density of the diving medium. Pure water is 1000',
                                       'fluidDensity': '1000'}
-            self.config['messages'] = {'refreshrate': '0.25'}
+            self.config['messages'] = {'refreshrate': '0.04',
+                                       'controlRate': '.1'}
             self.config['hardware'] = {'sonarcount': '1',
                                        'gps': 'True'}
             # Save file
@@ -74,9 +80,9 @@ class mavlinkInterface(object):
         # Handle SITL Mode
         self.sitl = sitl
         if sitl:
-            self.__log.warn('================================')
-            self.__log.warn('========SITL MODE ACTIVE========')
-            self.__log.warn('================================')
+            self.__log.warn('========================================')
+            self.__log.warn('=========== SITL MODE ACTIVE ===========')
+            self.__log.warn('========================================')
             self.externalPressureMessage = 'SCALED_PRESSURE'
 
         # Create variables to contain mavlink message data
@@ -117,6 +123,18 @@ class mavlinkInterface(object):
         self.heartbeatThread.daemon = True  # Kill on program end
         self.heartbeatThread.start()
 
+        # start Manual control process
+        self.manualControlParams = {
+            'x': 0,     # X-Axis thrust [Range: -1000-1000; Back=-1000, Forward=1000, 0 = No 'forward' thrust]
+            'y': 0,     # Y-Axis thrust [Range: -1000-1000; Left=-1000, Right=1000, 0 = No 'sideways' thrust]
+            'z': 500,   # Z-Axis thrust [Range: -1000-1000; Left=-1000, Up=1000, 500 = No vertical thrust]
+            'r': 0,     # Rotation [Range: -1000-1000; Left=-1000, Right=1000, 0 = No rotational thrust]
+            'b': 0      # A bitfield representing controller buttons pressed,(use 1 << btn# to activate button)
+        }
+        self.manualControlThread = Thread(target=self.__manualControlMaintain, args=(self.killEvent,))
+        self.manualControlThread.daemon = True  # Kill on program end
+        self.manualControlThread.start()
+
         # start leak detection
         self.leakDetectorThread = Thread(target=self.__leakDetector, args=(self.killEvent,))
         self.leakDetectorThread.daemon = True   # Kill on program end
@@ -133,7 +151,7 @@ class mavlinkInterface(object):
         # self.dataRecorderThread.start()self.messages['ATTITUDE']['message'].to_dict()['mavpackettype']
 
         # Initiate light class
-        self.lights = commands.active.lights(self.mavlinkConnection)
+        self.lights = commands.active.lights(self)
 
         # Initiate sonar class
         if int(self.config['hardware']['sonarcount']) > 0:
@@ -298,11 +316,43 @@ class mavlinkInterface(object):
             system_status,      # system_status
             mavlink_version)    # mavlink_version
 
+    def __manualControlSend(self) -> None:
+        '''
+        Sends a manual control message based on the dict self.manualControlParams
+
+        Detailed description of MANUAL_CONTROL Message
+        Name: MANUAL_CONTROL ( #69 )
+        Usage: This message provides an API for manually controlling the vehicle using standard joystick axes.
+        It is typically used with a joystick-like input device, but can also be used for other forms of manual control.
+        X, Y, Z, and r axes can be disabled with a value of INT16_MAX (Not used in this case).
+
+        Field Name  Type	    Description
+        x	        int16_t	    X-Axis thrust/Pitch [Range: -1000-1000; Back=-1000, Forward=1000, 0 = No thrust]
+        y	        int16_t	    Y-Axis thrust/Roll [Range: -1000-1000; Left=-1000, Right=1000, 0 = No thrust]
+        z	        int16_t	    Z-Axis thrust/Lift [Range: -1000-1000; Left=-1000, Up=1000, 500 = No thrust]
+        r	        int16_t	    R-axis Thrust/Rotation [Range: -1000-1000; Left=-1000, Right=1000, 0 = No thrust]
+        buttons	    uint16_t	A bitfield representing controller buttons pressed,(use 1 << btn# to activate button)
+        '''
+        self.mavlinkConnection.mav.manual_control_send(
+            self.mavlinkConnection.target_system,
+            self.manualControlParams['x'],  # X-Axis thrust
+            self.manualControlParams['y'],  # Y-Axis thrust
+            self.manualControlParams['z'],  # Z-Axis thrust
+            self.manualControlParams['r'],  # R-Axis thrust
+            self.manualControlParams['b']   # Button bitmap
+        )
+
     def __heartbeatMaintain(self, killEvent: Event) -> None:
         self.__log.trace('Heartbeat broadcast started')
         while not killEvent.wait(timeout=1):
             self.__heartbeatSend()
         self.__log.trace('Heartbeat broadcast stopped')
+
+    def __manualControlMaintain(self, killEvent: Event) -> None:
+        self.__log.trace('Manual Control broadcast started')
+        while not killEvent.wait(timeout=(float(self.config['messages']['controlRate']))):
+            self.__manualControlSend()
+        self.__log.trace('Manual Control broadcast stopped')
 
     def __queueManager(self, killEvent: Event) -> None:
         self.__log.trace('queueManager starting')
@@ -404,7 +454,7 @@ class mavlinkInterface(object):
         Parameter Absolute: When true, an angle of 0 degrees is magnetic north
         '''
         t = Thread(target=commands.active.move,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, direction, time, throttle,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, direction, time, throttle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -422,7 +472,7 @@ class mavlinkInterface(object):
         Parameter Time: The time (in seconds) to power the thrusters
         '''
         t = Thread(target=commands.active.move3d,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent,
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent,
                          throttleX, throttleY, throttleZ, time,))
 
         # Calculate action based on mode
@@ -455,7 +505,7 @@ class mavlinkInterface(object):
         :param throttle: percent throttle to use, -100 = full down, 100 = full up
         '''
         t = Thread(target=commands.active.diveTime,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, time, throttle,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, time, throttle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -481,7 +531,7 @@ class mavlinkInterface(object):
         angle: distance to rotate in degrees
         '''
         t = Thread(target=commands.active.yaw,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, angle,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, angle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -489,12 +539,12 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def yaw2(self, angle: float, absolute=False, execMode: str = None) -> None:
+    def yawBasic(self, angle: float, absolute=False, execMode: str = None) -> None:
         '''Rotates the drone around the Z-Axis
 
         angle: distance to rotate in degrees
         '''
-        t = Thread(target=commands.active.yaw2, args=(self, self.currentTaskKillEvent, angle, absolute,))
+        t = Thread(target=commands.active.yawBasic, args=(self, self.currentTaskKillEvent, angle, absolute,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -506,7 +556,7 @@ class mavlinkInterface(object):
         '''
         Opens the Gripper Arm
         '''
-        t = Thread(target=commands.active.gripperOpen, args=(self.mavlinkConnection, self.sem, time,))
+        t = Thread(target=commands.active.gripperOpen, args=(self.manualControlParams, self.sem, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -518,7 +568,7 @@ class mavlinkInterface(object):
         '''
         Closes the Gripper Arm
         '''
-        t = Thread(target=commands.active.gripperClose, args=(self.mavlinkConnection, self.sem, time,))
+        t = Thread(target=commands.active.gripperClose, args=(self.manualControlParams, self.sem, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -532,7 +582,7 @@ class mavlinkInterface(object):
 
         param brightness: the percentage of full brightness (rounded to the nearest step) to set the lights to
         '''
-        t = Thread(target=self.lights.set, args=(self.mavlinkConnection, self.sem, brightness,))
+        t = Thread(target=self.lights.set, args=(self, self.sem, brightness,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -547,7 +597,7 @@ class mavlinkInterface(object):
         param time: an integer representing the number of seconds to wait
         '''
         t = Thread(target=commands.active.wait,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, time,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -631,12 +681,25 @@ class mavlinkInterface(object):
 
         # Check message availability
         if self.externalPressureMessage not in self.messages:
-            self.__log.warn('Scaled Pressure message not available, Possible config issue.')
             sleep(1)
 
         # Get the pressure data
         pressure_data = self.messages[self.externalPressureMessage]['message']
-        self.__log.trace(round(100 * float(pressure_data.press_abs), 2))
+        self.__log.rdata(round(100 * float(pressure_data.press_abs), 2))
+        return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
+
+    def getPressureInternal(self) -> float:
+        '''Returns the reading of the internal pressure sensor in Pascals'''
+
+        self.__log.trace('Fetching External Pressure')
+
+        # Check message availability
+        if 'SCALED_PRESSURE' not in self.messages:
+            sleep(1)
+
+        # Get the pressure data
+        pressure_data = self.messages['SCALED_PRESSURE']['message']
+        self.__log.rdata('getInternalPressure about to return ' + str(round(100 * float(pressure_data.press_abs), 2)))
         return round(100 * float(pressure_data.press_abs), 2)   # convert to Pascals before returning
 
     def getDepth(self) -> float:
@@ -795,7 +858,13 @@ class mavlinkInterface(object):
         relative: (1) - zero is current bearing, (0) - zero is north
         '''
         t = Thread(target=commands.active.yawBeta,
-                   args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
+                   args=(self.mavlinkConnection,
+                         self.sem,
+                         self.currentTaskKillEvent,
+                         angle,
+                         rate,
+                         direction,
+                         relative,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -840,5 +909,6 @@ class mavlinkInterface(object):
     #             self.recordedMessages[msg] = 0
 
     #         else:
-    #             self.__log.trace('setting recording of ' + msg + ' to log a message  at intervals of ' + str(interval))
+    #             self.__log.trace('setting recording of ' + msg + ' to log a message "
+    #                              + "at intervals of ' + str(interval))
     #             self.recordedMessages[msg] = interval

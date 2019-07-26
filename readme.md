@@ -67,6 +67,6 @@ This sets the execution mode of the attached command. For information of the var
 This argument causes movement commands to use absolute coordinates and directions, rather than coordinates and directions relative to the drone.
 
 - When present, direction is relative to magnetic north, depth is relative to the surface, etc.
-- When absent, direction coordinates, depth, and distances are all relative to the drone's current location and the direction it is facing
+- When absent, direction coordinates, depth, and distances are all relative to the drone's current location and heading
 
 Note: This argument is only relevant where a direction, depth, or coordinates are present

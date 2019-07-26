@@ -4,6 +4,7 @@ import mavlinkinterface                             # Import Interface
 from datetime import datetime
 
 mli = mavlinkinterface.mavlinkInterface('queue')    # Create interface object
+# mli = mavlinkinterface.mavlinkInterface('queue', sitl=True)    # Create interface object
 mli.arm()                                           # Arm the drone
 
 # Test Group 0: set surface pressure
