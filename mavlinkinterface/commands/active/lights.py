@@ -39,7 +39,8 @@ class lights(object):
 
     def __up(self, mli):
 
-        # Because the 
+        # Because adjusting the lights requires rapidle toggling manual control,
+        # and an 'unpressed' signal is always being sent, only the 'pressed' signal is sent here
         mli.mavlinkConnection.mav.manual_control_send(
             mli.mavlinkConnection.target_system,
             mli.manualControlParams['x'],  # X-Axis thrust
@@ -52,6 +53,8 @@ class lights(object):
 
     def __down(self, mli):
 
+        # Because adjusting the lights requires rapidle toggling manual control,
+        # and an 'unpressed' signal is always being sent, only the 'pressed' signal is sent here
         mli.mavlinkConnection.mav.manual_control_send(
             mli.mavlinkConnection.target_system,
             mli.manualControlParams['x'],  # X-Axis thrust

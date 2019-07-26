@@ -17,7 +17,7 @@ These functions cause the drone to take a physical action.
 - [setLights( brightness, execMode \<optional> )](active/lights.md)
 - [gripperOpen( time, execMode \<optional> )](active/gripperOpen.md)
 - [gripperClose( time, execMode \<optional> )](active/gripperClose.md)
-- [wait( time, execMode \<optional> )](active/wait.md)
+- DEPRECATED: [wait( time, execMode \<optional> )](active/wait.md)
 
 ### Passive
 
@@ -44,8 +44,6 @@ These functions work as described in the documentation, but to a lesser grade of
 
 - [dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )](active/dive.md)
   - Rotates to the depth and stops thrusting, but may pass the depth on momentum
-- [yaw( degrees, absolute \<optional>, execMode \<optional> )](active/yaw.md)
-  - Rotates to the angle and stops thrusting, but may pass the angle on momentum
 - [setLeakAction( action )](configuration/setLeakAction.md)
   - Currently the leak detection is implemented, but always causes the drone to surface, and cannot be changed at this time.
 
@@ -71,7 +69,13 @@ After each update, these functions will be moved to the completed functions cate
 These Functions were changed in a major way, which is explained below.  
 After each update, these functions will be moved to the completed functions category.
 
-- No new notable changes
+- [yaw( degrees, absolute \<optional>, execMode \<optional> )](active/yaw.md)
+  - Now has 3 stages:
+    1. Until within 30 degrees of target, yaws at 50% power
+    2. Until within 5 degrees of target, yaws at 25% power
+    3. cancels rotational momentum by reversing thrust until rotation is stopped
+- [getPressureInternal()](passive/getPressureInternal.md)
+  - Returns the internal pressure as a float
 
 ## Not Started functions
 
@@ -80,7 +84,6 @@ After each update, these functions will be moved to the completed functions cate
 - [cameraVideoStart( time \<optional>, resolution \<optional> )](passive/cameraVideoStart.md)
 - [cameraVideoStop()](passive/cameraVideoStop.md)
 - [cameraPhoto( resolution \<optional>, zoom \<optional>, )](passive/cameraPhoto.md)
-- [getPressureInternal()](passive/getPressureInternal.md)
 - [getAllSensorData()](passive/getAllSensorData.md)
 - [setLoggingLevel( level )](configuration/setLoggingLevel.md)
 - [setRecordingInterval( sensor, interval )](configuration/setRecordingInterval.md)

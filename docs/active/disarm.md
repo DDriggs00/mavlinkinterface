@@ -23,7 +23,8 @@ Returns void
 
 ```py
 MLI.disarm()
-# The propellers are now disabled
+# The propellers are now disabled.
+# Due to the way the ArduSub works, movement commands will still be sent, but will not do anything.
 ```
 
 ## Related Mavlink Commands
