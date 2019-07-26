@@ -41,3 +41,5 @@ If the Wait parameter is present, blocks until the mission is completed.
 ```py
 myMission.start(wait=True)
 ```
+
+To see this in action, run the mission example with SITL.

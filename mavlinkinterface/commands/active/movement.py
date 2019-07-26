@@ -112,6 +112,19 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
     :param throttle: Percent of thruster power to use
     '''
     try:
+        if throttle > 75:
+            acceptThreshold = .33
+            safetyThreshold = .5
+        elif throttle > 50:
+            acceptThreshold = .15
+            safetyThreshold = .33
+        elif throttle > 25:
+            acceptThreshold = .05
+            safetyThreshold = .15
+        else:
+            acceptThreshold = 0
+            safetyThreshold = .05
+
         log = getLogger("Movement")
         log.info("Diving to depth=" + str(depth)
                  + " at throttle=" + str(throttle)
@@ -170,6 +183,7 @@ def dive(mli, kill, depth, throttle=50, absolute=False):
             if i == 12:     # every 3 seconds
                 # if the drone has been thrusting for 3 seconds, but has not moved
                 if abs(oldDepth - currentDepth) <= safetyThreshold:
+
                     log.trace("Function dive with depth=" + str(depth)
                               + ", throttle=" + str(throttle)
                               + ", absolute=" + str(absolute)

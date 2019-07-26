@@ -393,7 +393,8 @@ class mavlinkInterface(object):
                 sleep(.1)
 
             # Wait for last item to execute
-            self.sem.acquire(blocking=True)
+            if self.sem.acquire(blocking=True):
+                self.sem.release()
 
         except KeyboardInterrupt:
             # Interrupted by Ctrl+C
