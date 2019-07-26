@@ -1,6 +1,7 @@
 # setDefaultExecMode( mode )
 
-Sets the queuing mode to use when the common parameter execMode is not given.
+Sets the queuing mode to use when the common parameter execMode is not given.  
+This will only work if the queue is empty, and no commands are currently executing
 The possible modes are as follows:
 
 Synchronous mode:
@@ -28,7 +29,9 @@ Mode (enum):
 
 ## Return Values
 
-Returns void
+Returns void.  
+If given an invalid mode, raises a ValueError.  
+If there is an item in the queue or a currently executing command, raises a ResourceWarding
 
 ## Example
 

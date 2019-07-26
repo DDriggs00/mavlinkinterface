@@ -23,7 +23,7 @@ heartbeat
 ## Installation
 
 1. Install python 3 (See instructions [here](https://realpython.com/installing-python/))
-   - If ppi3 was not installed along with python, install it now
+   - If pip3 was not installed along with python, install it now
 1. Install pymavlink
    - `pip3 install pymavlink` Note: Use the `--user` flag on Windows
 1. Install bluerobotics-ping
@@ -42,8 +42,8 @@ To use this library, you must already have an underwater drone set up and workin
    - `MLI = mavlinkinterface.mavlinkInterface(execMode="queue")`
 1. If you are diving for the first time in a given body of water, set the surface pressure.
    - [`MLI.setSurfacePressure()`](docs/configuration/setSurfacePressure.md)
-1. If you are diving in a medium that has a different density from fresh water or the last used medium (eg. salt water), set the density
-   - [`MLI.setSurfacePressure(1027)`](docs/configuration/setSurfacePressure.md)
+1. If you are diving in a liquid that has a different density from fresh water or the last used medium (eg. salt water), set the density
+   - [`MLI.setFluidDensity(1027)`](docs/configuration/setFluidDensity.md)
 1. Arm the Drone
    - [`MLI.arm()`](docs/active/arm.md)
 1. Proceed with script

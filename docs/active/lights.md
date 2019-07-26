@@ -21,9 +21,7 @@ execMode (string, optional):
 
 ## Return Values
 
-Returns a string.  
-Upon success, returns "Success"  
-Upon Failure, returns the reason for failure.
+Returns void
 
 ## Examples
 
@@ -34,7 +32,7 @@ MLI.setLights(0)
 MLI.setLights(65)
 # sets the lights to 65% brightness
 
-MLI.setLights(100)
+MLI.setLights(brightness=100)
 # sets the lights to full brightness
 ```
 

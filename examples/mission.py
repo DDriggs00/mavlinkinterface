@@ -14,11 +14,11 @@ mli.arm()   # Enable the propellors.
 myMission = mavlinkinterface.mission(mli)
 
 # Add some waypoints to the mission
-myMission.goToCoordinates(33.810561, -118.394265)
+myMission.goToCoordinates(33.810361, -118.394265)
 myMission.goToCoordinates(33.811006, -118.394265)
-myMission.goToCoordinates(33.811006, -118.394749)
-myMission.goToCoordinates(33.810561, -118.394749)
-myMission.goToCoordinates(33.810561, -118.394265)
+myMission.goToCoordinates(33.811006, -118.394549)
+myMission.goToCoordinates(33.810361, -118.394549)
+myMission.goToCoordinates(33.810361, -118.394265)
 
 # Upload mission to Drone
 myMission.upload()

@@ -30,6 +30,7 @@ class mission(object):
 
         # First command must be setHome TODO: figure out why
         self.setHome()
+        self.__log.trace('New Mission object created')
 
     def setHome(self, lat: float = None, lon: float = None) -> None:
         '''Sets the GPS Home position to the given coordinates (or the current position if none are given)
@@ -41,10 +42,10 @@ class mission(object):
 
         if lat is None and lon is None:
             current = 1
-            self.__log.debug('Adding command to set Home to current location')
+            self.__log.trace('Adding command to set Home to current location (called initially by default')
         elif lat is not None and lon is not None:
             current = 0
-            self.__log.debug('Adding command to set Home to ' + str(lat) + ', ' + str(lon))
+            self.__log.trace('Adding command to set Home to ' + str(lat) + ', ' + str(lon))
         else:
             print("Coordinates may only be passed in pairs, command ignored")
             return
@@ -73,7 +74,7 @@ class mission(object):
         :param lat: the latitude to set as home in decimal degrees (use at least 6 decimal places)
         :param lon: the longitude to set as home in decimal degrees (use at least 6 decimal places)
         '''
-        self.__log.debug('Adding command to move to ' + str(lat) + ', ' + str(lon))
+        self.__log.trace('Adding command to move to ' + str(lat) + ', ' + str(lon))
 
         self.wp.add(mavutil.mavlink.MAVLink_mission_item_message(
             self.__mli.mavlinkConnection.target_system,
@@ -151,7 +152,7 @@ class mission(object):
                 sleep(.1)
             msg = self.__mli.messages['MISSION_ITEM_REACHED']['message']
             timestamp = self.__mli.messages['MISSION_ITEM_REACHED']['time']
-            while msg.seq < (self.wp.count() - 1) or (datetime.now() - timestamp).total_seconds() > 1:
+            while msg.seq < (self.wp.count() - 1) or (datetime.now() - timestamp).total_seconds() > 5:
                 sleep(.5)
                 msg = self.__mli.messages['MISSION_ITEM_REACHED']['message']
             print("mission complete")

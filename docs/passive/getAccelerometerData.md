@@ -7,7 +7,7 @@ Reads the accelerometer and returns the output in units of meters per second squ
 Returns a JSON-formatted string.  
 The output will data taken directly from the accelerometer.
 
-## Example output
+## Example output (expanded)
 
 ```json
 {

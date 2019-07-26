@@ -17,6 +17,7 @@ These functions cause the drone to take a physical action.
 - [setLights( brightness, execMode \<optional> )](active/lights.md)
 - [gripperOpen( time, execMode \<optional> )](active/gripperOpen.md)
 - [gripperClose( time, execMode \<optional> )](active/gripperClose.md)
+- [wait( time, execMode \<optional> )](active/wait.md)
 
 ### Passive
 
@@ -42,8 +43,11 @@ These functions modify configuration values, which persist on the device between
 These functions work as described in the documentation, but to a lesser grade of accuracy. Details on the failings of each one included. These are actively under development
 
 - [dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )](active/dive.md)
+  - Rotates to the depth and stops thrusting, but may pass the depth on momentum
 - [yaw( degrees, absolute \<optional>, execMode \<optional> )](active/yaw.md)
+  - Rotates to the angle and stops thrusting, but may pass the angle on momentum
 - [setLeakAction( action )](configuration/setLeakAction.md)
+  - Currently the leak detection is implemented, but always causes the drone to surface, and cannot be changed at this time.
 
 ## New Functions
 
@@ -52,6 +56,15 @@ After each update, these functions will be moved to the completed functions cate
 
 - [getAltitude()](passive/getAltitude.md)
   - This takes advantage of the new sonar sensor
+- [gps.getCoordinates()](passive/gps.getCoordinates.md)
+  - This returns GPS Coordinates
+- [mission commands](missions.md)
+  - This allows the user to plan and execute missions
+- [getTemperature()](passive/getTemperature.md)
+  - This returns the temperature as read by the external pressure sensor
+- [setDefaultExecMode( mode )](configuration/setDefaultExecMode.md)
+  - This allows for the changing of the default execution mode after initialization
+  - Note that this requires the queue to be empty and no commands to be executing.
 
 ## Modified Functions (complete)
 
@@ -68,11 +81,9 @@ After each update, these functions will be moved to the completed functions cate
 - [cameraVideoStop()](passive/cameraVideoStop.md)
 - [cameraPhoto( resolution \<optional>, zoom \<optional>, )](passive/cameraPhoto.md)
 - [getPressureInternal()](passive/getPressureInternal.md)
-- [getTemperature()](passive/getTemperature.md)
 - [getAllSensorData()](passive/getAllSensorData.md)
 - [setLoggingLevel( level )](configuration/setLoggingLevel.md)
 - [setRecordingInterval( sensor, interval )](configuration/setRecordingInterval.md)
-- [setDefaultQueueMode( mode )](configuration/setDefaultQueueMode.md)
 - getSonarMap()
 - All GPS-Related functions, including:
   - setGpsMode()

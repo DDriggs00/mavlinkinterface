@@ -36,6 +36,9 @@ Returns void
 ```py
 MLI.move3d(throttleX=100, throttleY=100, throttleZ=0, time = 15)
 # Moves the drone forward and to the right at 100% power for 15 seconds
+
+MLI.move3d(0, 0, 100, 10)
+# Thrust upward for 10 seconds
 ```
 
 ## Related Mavlink Messages

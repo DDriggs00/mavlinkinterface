@@ -39,7 +39,7 @@ Returns void
 MLI.move(direction = 0, time = 15, throttle = 75)
 # Moves the drone straight forward at 75% power for 15 seconds
 
-MLI.move(direction = -15, time = 0.5, absolute)
+MLI.move(direction = -15, time = 0.5, absolute=True)
 # moves in the direction of 15 degrees to the right of magnetic north at 100% power for half a second
 ```
 

@@ -28,7 +28,8 @@ execMode (string, optional):
 
 ## Return Values
 
-Returns void
+Returns void  
+If the given values would put the drone above the surface, throws a ValueError
 
 ## Examples
 
@@ -36,11 +37,14 @@ Returns void
 MLI.dive(depth = -10)
 # The drone descends by 10 meters or until it is obstructed
 
-MLI.dive(depth = 10, throttle = 100)
-# The drone ascends by 10 meters at 100 percent throttle or until it is obstructed
+MLI.dive(depth = 9, throttle = 100)
+# The drone ascends by 9 meters at 100 percent throttle or until it is obstructed
 
-MLI.dive(depth = 5, absolute)
-# An exception is thrown, indicating that the drone cannot rise above the surface of the water
+MLI.dive(depth = -5, absolute=True)
+# The drone ascends or descends until it reaches a depth of 5 meters below the surface
+
+MLI.dive(depth = 5, absolute=True)
+# An ValueError is thrown, indicating that the drone cannot rise above the surface of the water
 ```
 
 ## Related Mavlink Messages

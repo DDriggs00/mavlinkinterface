@@ -6,6 +6,8 @@ Power the gripper arm closed for *time* seconds
 
 time (float):  
 > The number of seconds to send the "close" signal to the gripper arm
+> This has a resolution of 1/4 sec.  
+> Closing the gripper from a fully open position is 1.75 sec
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:

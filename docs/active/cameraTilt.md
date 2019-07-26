@@ -41,7 +41,7 @@ MLI.cameraTilt(angle = -45) # Assuming camera is flat
 MLI.cameraTilt(angle = 110, speed = 10) # Assuming camera is flat
 # Rotates the camera upward at 10% of maximum speed until it reaches the limit of +90 degrees, Returns "Reached max angle. Angle=90"
 
-MLI.cameraTilt(angle = 0, absolute)
+MLI.cameraTilt(angle = 0, absolute=True)
 # Positions the camera to point straight forward, Returns True
 ```
 
