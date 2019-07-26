@@ -26,6 +26,8 @@ class mavlinkInterface(object):
     This is the main interface to Mavlink. All calls will be made through this object.
     '''
 
+    version = '1.1'
+
     # Internal Commands
     def __init__(self, execMode: str, sitl=False):
         '''
@@ -51,16 +53,19 @@ class mavlinkInterface(object):
             self.__log.trace('importing configuration file from path: ' + self.configPath)
             self.config.read(self.configPath)
 
-        if not exists(self.configPath) or 'version' not in self.config or self.config['version']['version'] != '1.0':
+        if (not exists(self.configPath)
+                or 'version' not in self.config
+                or self.config['version']['version'] != self.version):
+
             # Populate file with Default config options
-            self.config['version'] = {'version': '1.1'}
+            self.config['version'] = {'version': self.version}
             self.config['mavlink'] = {'connectionString': 'udp:0.0.0.0:14550'}
             self.config['geodata'] = {'COMMENT_1': 'The pressure in pascals at the surface of the body of water.',
                                       'COMMENT_1B': 'Sea Level is around 101325. Varies day by day',
                                       'surfacePressure': '101325',
                                       'COMMENT_2': 'The density of the diving medium. Pure water is 1000',
                                       'fluidDensity': '1000'}
-            self.config['messages'] = {'refreshrate': '0.25',
+            self.config['messages'] = {'refreshrate': '0.04',
                                        'controlRate': '.1'}
             self.config['hardware'] = {'sonarcount': '1',
                                        'gps': 'True'}
@@ -75,9 +80,9 @@ class mavlinkInterface(object):
         # Handle SITL Mode
         self.sitl = sitl
         if sitl:
-            self.__log.warn('================================')
-            self.__log.warn('========SITL MODE ACTIVE========')
-            self.__log.warn('================================')
+            self.__log.warn('========================================')
+            self.__log.warn('=========== SITL MODE ACTIVE ===========')
+            self.__log.warn('========================================')
             self.externalPressureMessage = 'SCALED_PRESSURE'
 
         # Create variables to contain mavlink message data
@@ -346,8 +351,8 @@ class mavlinkInterface(object):
     def __manualControlMaintain(self, killEvent: Event) -> None:
         self.__log.trace('Manual Control broadcast started')
         while not killEvent.wait(timeout=(float(self.config['messages']['controlRate']))):
-            self.__heartbeatSend()
-        self.__log.trace('Heartbeat broadcast stopped')
+            self.__manualControlSend()
+        self.__log.trace('Manual Control broadcast stopped')
 
     def __queueManager(self, killEvent: Event) -> None:
         self.__log.trace('queueManager starting')
@@ -448,7 +453,7 @@ class mavlinkInterface(object):
         Parameter Absolute: When true, an angle of 0 degrees is magnetic north
         '''
         t = Thread(target=commands.active.move,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, direction, time, throttle,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, direction, time, throttle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -466,7 +471,7 @@ class mavlinkInterface(object):
         Parameter Time: The time (in seconds) to power the thrusters
         '''
         t = Thread(target=commands.active.move3d,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent,
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent,
                          throttleX, throttleY, throttleZ, time,))
 
         # Calculate action based on mode
@@ -499,7 +504,7 @@ class mavlinkInterface(object):
         :param throttle: percent throttle to use, -100 = full down, 100 = full up
         '''
         t = Thread(target=commands.active.diveTime,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, time, throttle,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, time, throttle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -525,7 +530,7 @@ class mavlinkInterface(object):
         angle: distance to rotate in degrees
         '''
         t = Thread(target=commands.active.yaw,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, angle,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, angle,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -550,7 +555,7 @@ class mavlinkInterface(object):
         '''
         Opens the Gripper Arm
         '''
-        t = Thread(target=commands.active.gripperOpen, args=(self.mavlinkConnection, self.sem, time,))
+        t = Thread(target=commands.active.gripperOpen, args=(self.manualControlParams, self.sem, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -562,7 +567,7 @@ class mavlinkInterface(object):
         '''
         Closes the Gripper Arm
         '''
-        t = Thread(target=commands.active.gripperClose, args=(self.mavlinkConnection, self.sem, time,))
+        t = Thread(target=commands.active.gripperClose, args=(self.manualControlParams, self.sem, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -591,7 +596,7 @@ class mavlinkInterface(object):
         param time: an integer representing the number of seconds to wait
         '''
         t = Thread(target=commands.active.wait,
-                   args=(self.mavlinkConnection, self.sem, self.currentTaskKillEvent, time,))
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, time,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -839,7 +844,13 @@ class mavlinkInterface(object):
         relative: (1) - zero is current bearing, (0) - zero is north
         '''
         t = Thread(target=commands.active.yawBeta,
-                   args=(self.mavlinkConnection, self.sem, angle, rate, direction, relative,))
+                   args=(self.mavlinkConnection,
+                         self.sem,
+                         self.currentTaskKillEvent,
+                         angle,
+                         rate,
+                         direction,
+                         relative,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -884,5 +895,6 @@ class mavlinkInterface(object):
     #             self.recordedMessages[msg] = 0
 
     #         else:
-    #             self.__log.trace('setting recording of ' + msg + ' to log a message  at intervals of ' + str(interval))
+    #             self.__log.trace('setting recording of ' + msg + ' to log a message "
+    #                              + "at intervals of ' + str(interval))
     #             self.recordedMessages[msg] = interval
