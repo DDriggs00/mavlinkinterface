@@ -4,10 +4,10 @@ from distutils.core import setup
 
 setup(name='mavlinkinterface',
       version='1.0',
-      description='Interface with pymavlink',
+      description='A Python interface for mavlink, expanding on pymavlink',
       author='Devin Driggs',
       author_email='drig3819@vandals.uidaho.edu',
-      url='devindriggs.com',
+      url='uidaho.edu',
       packages=['mavlinkinterface',
                 'mavlinkinterface/enum',
                 'mavlinkinterface/commands',
