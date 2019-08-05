@@ -15,18 +15,16 @@ from pymavlink.mavextra import mag_heading  # Pre-Built function to calculate he
 import atexit                           # For keeping the queue executing while a script ends
 
 # Local Imports
-from mavlinkinterface.logger import getLogger               # For Logging
-import mavlinkinterface.commands as commands                # For calling commands
-# from mavlinkinterface.rthread import RThread                # For functions that have return values
-# from mavlinkinterface.enum.execModes import execModes       # For use in async mode
-
+from mavlinkinterface.logger import getLogger           # For Logging
+import mavlinkinterface.commands as commands            # For calling commands
+# from mavlinkinterface.rthread import RThread            # For functions that have return values
 
 class mavlinkInterface(object):
     '''
     This is the main interface to Mavlink. All calls will be made through this object.
     '''
 
-    version = '1.1'
+    configVersion = '1.1'
 
     # Internal Commands
     def __init__(self, execMode: str, sitl=False):
@@ -55,10 +53,10 @@ class mavlinkInterface(object):
 
         if (not exists(self.configPath)
                 or 'version' not in self.config
-                or self.config['version']['version'] != self.version):
+                or self.config['version']['version'] != self.configVersion):
 
             # Populate file with Default config options
-            self.config['version'] = {'version': self.version}
+            self.config['version'] = {'version': self.configVersion}
             self.config['mavlink'] = {'connectionString': 'udp:0.0.0.0:14550'}
             self.config['geodata'] = {'COMMENT_1': 'The pressure in pascals at the surface of the body of water.',
                                       'COMMENT_1B': 'Sea Level is around 101325. Varies day by day',
@@ -76,6 +74,11 @@ class mavlinkInterface(object):
         self.__log.trace('Setting class variables')
         self.execMode = execMode
         self.externalPressureMessage = 'SCALED_PRESSURE2'
+        # Leak response action valid options:
+        # "nothing": warns the user and takes note in the log, but takes no other action
+        # "surface": raises the drone to the surface, overriding any existing commands
+        # <absolute path to .py file, in specified format>
+        self.leakResponseAction = 'surface'
 
         # Handle SITL Mode
         self.sitl = sitl
@@ -278,7 +281,7 @@ class mavlinkInterface(object):
         while not killEvent.wait(timeout=1):
             if 'STATUSTEXT' in self.messages and 'LEAK' in str(self.messages['STATUSTEXT']['message']).upper():
                 log.error('Leak Detected: ' + self.messages['STATUSTEXT']['message'])    # Write the message to the log
-                self.surface(execMode='override')   # Then run the appropriate response
+                self.leakResponse()
 
         log.trace('StatusMonitor Stopping')
 
@@ -399,6 +402,28 @@ class mavlinkInterface(object):
         except KeyboardInterrupt:
             # Interrupted by Ctrl+C
             self.__log.warn('Keyboard interrupt received, aborting command')
+
+    def leakResponse(self) -> None:
+        '''
+        This function is called upon encountering a leak.
+        '''
+        self.__log.warn('Leak response triggered')
+        print('Leak detected, performing appropriate action')
+        self.__log.trace('Leak response is ' + self.leakResponseAction)
+
+        if self.leakResponseAction == 'surface':
+            self.surface(execMode='override')
+
+        elif self.leakResponseAction in ['nothing', 'warn', 'none']:
+            self.__log.warn('Leak Action is set to warn only, no further action will be taken')
+
+        elif self.leakResponseAction == 'home':
+            self.__log.warn('the home action is not yet implemented, surfacing instead')
+            self.surface(execMode='override')
+
+        else:
+            self.__log.warn('the custom script action is not yet implemented, surfacing instead')
+            self.surface(execMode='override')
 
     # Active commands
     def arm(self, execMode: str = None) -> None:
@@ -525,13 +550,13 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    def yaw(self, angle: float, execMode: str = None) -> None:
+    def yaw(self, angle: float, absolute=False, execMode: str = None) -> None:
         '''Rotates the drone around the Z-Axis
 
         angle: distance to rotate in degrees
         '''
         t = Thread(target=commands.active.yaw,
-                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, angle,))
+                   args=(self, self.currentTaskKillEvent, angle, absolute,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -544,7 +569,8 @@ class mavlinkInterface(object):
 
         angle: distance to rotate in degrees
         '''
-        t = Thread(target=commands.active.yawBasic, args=(self, self.currentTaskKillEvent, angle, absolute,))
+        t = Thread(target=commands.active.yawBasic,
+                   args=(self.manualControlParams, self.sem, self.currentTaskKillEvent, angle, absolute,))
 
         # Calculate action based on mode
         if self.__getSemaphore(execMode, t):   # If sem was able to be acquired
@@ -840,7 +866,16 @@ class mavlinkInterface(object):
         self.__log.debug('Execution mode successfully set to ' + mode)
 
     def setLeakAction(self, action: str) -> None:
-        raise NotImplementedError('This function is not yet implemented, but the leak detection is working')
+        '''
+        Sets the leak response action. Valid values:
+
+        - warn
+        - surface
+        - home (not yet implemented)
+        - <path to a specified file, see documentation for details> (not yet implemented)
+        '''
+        self.__log.debug('Leak Action changed to ' + action)
+        self.leakResponseAction = action
 
     # Beta Commands
     def yawBeta(self,
@@ -881,34 +916,31 @@ class mavlinkInterface(object):
             if(execMode == 'synchronous' or (execMode is None and self.execMode == 'synchronous')):
                 t.join()   # Wait when using synchronous mode
 
-    # def setRecordingInterval(self, message: str, interval: int) -> None:
-    #     '''
-    #     Enables, Disables, or alters the interval at which data is recorded to a file.
+    def setRecordingInterval(self, message: str, interval: int) -> None:
+        '''
+        Enables, Disables, or alters the interval at which data is recorded to a file.
 
-    #     :param message (str): the mavlink message to record
-    #     :param interval (int): the interval at which to record (every n seconds): -1=disabled, 0=every message
-    #     '''
+        :param message (str): the mavlink message to record
+        :param interval (int): the interval at which to record (every n seconds): -1=disabled, 0=every message
+        Resolution of 0.5 sec
+        '''
 
-    #     # Round interval to the nearest sec
-    #     interval = round(interval)
+        # Round interval to the nearest sec
+        interval = round(interval)
 
-    #     # if not list, convert to list
-    #     if not isinstance(message, list):
-    #         message = [message]
+        # if not list, convert to list
+        if not isinstance(message, list):
+            message = [message]
 
-    #     for msg in message:
-    #         self.__log.info("setting " + message + ' recording interval to ' + str(interval))
+        for msg in message:
+            self.__log.info("setting " + message + ' recording interval to ' + str(interval))
 
-    #         if interval < 0:
-    #             # Disable recording for message
-    #             self.__log.trace('Disabling recording of ' + msg)
-    #             self.recordedMessages.pop(msg, None)
+            if interval < 0:
+                # Disable recording for message
+                self.__log.trace('Disabling recording of ' + msg)
+                self.recordedMessages.pop(msg, None)
 
-    #         elif interval == 0:
-    #             self.__log.trace('setting recording of ' + msg + ' to log every message')
-    #             self.recordedMessages[msg] = 0
-
-    #         else:
-    #             self.__log.trace('setting recording of ' + msg + ' to log a message "
-    #                              + "at intervals of ' + str(interval))
-    #             self.recordedMessages[msg] = interval
+            else:
+                self.__log.trace('setting recording of ' + msg + ' to log a message '
+                                 + 'at intervals of ' + str(interval))
+                self. recordedMessages[msg] = round(2 * interval) / 2
