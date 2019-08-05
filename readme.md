@@ -13,12 +13,6 @@
   - Together
 - Easily switch between flight modes
 
-## TODO
-
-make surface override depth holding mode
-"override" disables depth hold mode
-add terrain-following mode once amanda makes one
-heartbeat
 
 ## Installation
 
@@ -70,3 +64,7 @@ This argument causes movement commands to use absolute coordinates and direction
 - When absent, direction coordinates, depth, and distances are all relative to the drone's current location and heading
 
 Note: This argument is only relevant where a direction, depth, or coordinates are present
+
+## ChangeLog
+
+Changelog is [here](docs/changelog.md)
