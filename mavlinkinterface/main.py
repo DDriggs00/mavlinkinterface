@@ -148,10 +148,10 @@ class mavlinkInterface(object):
         self.queueThread.daemon = True   # Kill on program end
         self.queueThread.start()
 
-        # # Start message recording process
-        # self.dataRecorderThread = Thread(target=self.__dataRecorder, args=(self.killEvent,))
-        # self.dataRecorderThread.daemon = True   # Kill on program end
-        # self.dataRecorderThread.start()self.messages['ATTITUDE']['message'].to_dict()['mavpackettype']
+        # Start message recording process
+        self.dataRecorderThread = Thread(target=self.__dataRecorder, args=(self.killEvent,))
+        self.dataRecorderThread.daemon = True   # Kill on program end
+        self.dataRecorderThread.start()
 
         # Initiate light class
         self.lights = commands.active.lights(self)
@@ -271,7 +271,7 @@ class mavlinkInterface(object):
             # Timeout used so it has the chance to notice the stop flag when no data is present
             if msg:
                 self.messages[str(msg.get_type())] = {'message': msg, 'time': datetime.now()}
-                if msg.get_type() in self.recordedMessages:
+                if msg.get_type() in self.recordedMessages and self.recordedMessages[msg.get_type()] == 0:
                     files[msg.get_type()].write(str(datetime.now()) + ', ' + str(msg.to_dict()) + '\n')
 
     def __leakDetector(self, killEvent: Event) -> None:
@@ -356,6 +356,47 @@ class mavlinkInterface(object):
         while not killEvent.wait(timeout=(float(self.config['messages']['controlRate']))):
             self.__manualControlSend()
         self.__log.trace('Manual Control broadcast stopped')
+
+    def __dataRecorder(self, killEvent: Event) -> None:
+        '''
+        This function logs data to a file when the logging is set to log at an interval.
+        '''
+        readMessages = ['SYS_STATUS',
+                        'RAW_IMU',
+                        'SCALED_PRESSURE',
+                        'SCALED_PRESSURE2',
+                        'HEARTBEAT',
+                        'ATTITUDE',
+                        'STATUSTEXT']
+        if self.gpsEnabled:
+            readMessages.append('GPS_RAW_INT')              # Basic GPS
+            readMessages.append('GLOBAL_POSITION_INT')      # Advanced GPS
+            readMessages.append('MISSION_REQUEST')          # For missions
+            readMessages.append('MISSION_ACK')              # For missions
+            readMessages.append('MISSION_ITEM')             # For missions
+            readMessages.append('MISSION_ITEM_REACHED')     # For missions
+            readMessages.append('MISSION_CURRENT')          # For missions
+            readMessages.append('EKF_STATUS_REPORT')        # For GPS and missions
+
+        filePath = abspath(expanduser("~/logs/mavlinkInterface/"))
+
+        files = {}
+        for m in readMessages:
+            if m in self.recordedMessages:
+                files[m] = open(filePath + '/' + m + '.log', 'a+')
+        i = 0
+
+        while not killEvent.wait(.5):
+
+            for message in self.recordedMessages:
+                if self.recordedMessages[message] > 0 and i % self.recordedMessages[message] == 0:
+                    if message in self.messages:
+                        files[message].write(str(datetime.now()) + ', ' + str(self.recordedMessages[message]) + '\n')
+
+            if i == 120:
+                i = 0
+
+            i += 1
 
     def __queueManager(self, killEvent: Event) -> None:
         self.__log.trace('queueManager starting')
@@ -922,11 +963,14 @@ class mavlinkInterface(object):
 
         :param message (str): the mavlink message to record
         :param interval (int): the interval at which to record (every n seconds): -1=disabled, 0=every message
-        Resolution of 0.5 sec
+        Resolution of 0.5 sec, Maximum interval of 60 seconds
         '''
-
         # Round interval to the nearest sec
-        interval = round(interval)
+        interval = round(2 * interval) / 2
+
+        # enforce max interval
+        if interval > 60:
+            interval = 60
 
         # if not list, convert to list
         if not isinstance(message, list):
@@ -943,4 +987,4 @@ class mavlinkInterface(object):
             else:
                 self.__log.trace('setting recording of ' + msg + ' to log a message '
                                  + 'at intervals of ' + str(interval))
-                self. recordedMessages[msg] = round(2 * interval) / 2
+                self. recordedMessages[msg] = interval
