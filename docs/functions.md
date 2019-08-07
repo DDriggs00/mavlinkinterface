@@ -38,6 +38,11 @@ These functions modify configuration values, which persist on the device between
 - [setSurfacePressure( pressure \<optional> )](configuration/setSurfacePressure.md)
 - [setFluidDensity( density \<optional> )](configuration/setFluidDensity.md)
 
+## Mission Mode
+
+Advanced functions relying on GPS fall under mission mode.  
+See [here](missions.md) for more information on missions
+
 ## Partially completed functions
 
 These functions work as described in the documentation, but to a lesser grade of accuracy. Details on the failings of each one included. These are actively under development
@@ -45,7 +50,7 @@ These functions work as described in the documentation, but to a lesser grade of
 - [dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )](active/dive.md)
   - Rotates to the depth and stops thrusting, but may pass the depth on momentum
 - [setLeakAction( action )](configuration/setLeakAction.md)
-  - Currently the leak detection is implemented, but always causes the drone to surface, and cannot be changed at this time.
+  - Currently the leak detection is implemented, but the return to base and custom script functions are not yet implemented.
 
 ## New Functions
 
@@ -63,6 +68,8 @@ After each update, these functions will be moved to the completed functions cate
 - [setDefaultExecMode( mode )](configuration/setDefaultExecMode.md)
   - This allows for the changing of the default execution mode after initialization
   - Note that this requires the queue to be empty and no commands to be executing.
+- [getPressureInternal()](passive/getPressureInternal.md)
+  - Returns the internal pressure as a float
 
 ## Modified Functions (complete)
 
@@ -74,8 +81,6 @@ After each update, these functions will be moved to the completed functions cate
     1. Until within 30 degrees of target, yaws at 50% power
     2. Until within 5 degrees of target, yaws at 25% power
     3. cancels rotational momentum by reversing thrust until rotation is stopped
-- [getPressureInternal()](passive/getPressureInternal.md)
-  - Returns the internal pressure as a float
 
 ## Not Started functions
 

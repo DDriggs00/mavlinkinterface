@@ -13,7 +13,6 @@
   - Together
 - Easily switch between flight modes
 
-
 ## Installation
 
 1. Install python 3 (See instructions [here](https://realpython.com/installing-python/))
@@ -48,7 +47,8 @@ See [the examples](examples/) for more in-depth instructions.
 
 ## Function List
 
-For Full function list, see [here](docs/functions.md)
+For Full function list, see [here](docs/functions.md)  
+For Mission commands, see [here](docs/missions.md)
 
 ## Common Parameters
 
