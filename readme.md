@@ -1,5 +1,7 @@
 # Mavlink Interface
 
+This is a Python interface between the Mavlink software used by the Sunfish’s Drone Controller and a Python script, allowing for simple control of the drone with both simple movement control and advanced waypoint-based navigation. Additionally, it provides access to any sensors attached to the drone, allowing for both individual and aggregate sensor data retrieval.
+
 ## Features
 
 - Full Logging of some or all sensor data (configurable)
@@ -67,4 +69,4 @@ Note: This argument is only relevant where a direction, depth, or coordinates ar
 
 ## ChangeLog
 
-Changelog is [here](docs/changelog.md)
+Changelog is available [here](docs/changelog.md).
