@@ -11,6 +11,7 @@ from mavlinkinterface.logger import getLogger   # For logging
 class sonar(object):
     def __init__(self):
 
+        self.disabled = False
         self.log = getLogger('sonar')
         self.log.trace('Sonar sensor initialization started')
         # set address
@@ -58,6 +59,8 @@ class sonar(object):
         self.log.trace('Getting sonar message of id: ' + str(message))
         self.__request(message)
         try:
+            if self.disabled:
+                raise socket.timeout
             data, addr = self.__sock.recvfrom(1024)
         except socket.timeout:  # If unable to retrieve the requested data within 1 sec
             self.log.error('A Timeout occurred when retrieving a sonar message of id ' + str(message))

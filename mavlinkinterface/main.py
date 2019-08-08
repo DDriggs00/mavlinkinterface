@@ -112,6 +112,24 @@ class mavlinkInterface(object):
         self.killEvent = Event()    # When set, will signal all attached tasks to stop
         self.currentTaskKillEvent = Event()     # When set, will kill the current task
 
+        # Set messages to be read
+        self.readMessages = ['SYS_STATUS',
+                             'RAW_IMU',
+                             'SCALED_PRESSURE',
+                             'SCALED_PRESSURE2',
+                             'HEARTBEAT',
+                             'ATTITUDE',
+                             'STATUSTEXT']
+        if self.gpsEnabled:
+            self.readMessages.append('GPS_RAW_INT')              # Basic GPS
+            self.readMessages.append('GLOBAL_POSITION_INT')      # Advanced GPS
+            self.readMessages.append('MISSION_REQUEST')          # For missions
+            self.readMessages.append('MISSION_ACK')              # For missions
+            self.readMessages.append('MISSION_ITEM')             # For missions
+            self.readMessages.append('MISSION_ITEM_REACHED')     # For missions
+            self.readMessages.append('MISSION_CURRENT')          # For missions
+            self.readMessages.append('EKF_STATUS_REPORT')        # For GPS and missions
+
         # start dataRefreshers
         self.recordedMessages = {
             'GPS_RAW_INT': 0,
@@ -237,37 +255,17 @@ class mavlinkInterface(object):
         log = getLogger('Refresh')  # Log that this was started
         log.trace('dataRefresher Class Initiating.')
 
-        readMessages = ['SYS_STATUS',
-                        'RAW_IMU',
-                        'SCALED_PRESSURE',
-                        'SCALED_PRESSURE2',
-                        'HEARTBEAT',
-                        'ATTITUDE',
-                        'STATUSTEXT']
-        if self.gpsEnabled:
-            readMessages.append('GPS_RAW_INT')              # Basic GPS
-            readMessages.append('GLOBAL_POSITION_INT')      # Advanced GPS
-            readMessages.append('MISSION_REQUEST')          # For missions
-            readMessages.append('MISSION_ACK')              # For missions
-            readMessages.append('MISSION_ITEM')             # For missions
-            readMessages.append('MISSION_ITEM_REACHED')     # For missions
-            readMessages.append('MISSION_CURRENT')          # For missions
-            readMessages.append('EKF_STATUS_REPORT')        # For GPS and missions
-
         filePath = abspath(expanduser("~/logs/mavlinkInterface/"))
 
         files = {}
-        for m in readMessages:
+        for m in self.readMessages:
             if m in self.recordedMessages:
                 files[m] = open(filePath + '/' + m + '.log', 'a+')
 
         while not killEvent.is_set():   # When killEvent is set, stop looping
             msg = None
-            # try:
-            msg = self.mavlinkConnection.recv_match(type=readMessages, blocking=True, timeout=1)
-            # except:
-            #     self.__log.exception('')
-            #     # TODO figure out which exception is periodically showing up
+            msg = self.mavlinkConnection.recv_match(type=self.readMessages, blocking=True, timeout=1)
+
             # Timeout used so it has the chance to notice the stop flag when no data is present
             if msg:
                 self.messages[str(msg.get_type())] = {'message': msg, 'time': datetime.now()}
@@ -346,12 +344,14 @@ class mavlinkInterface(object):
         )
 
     def __heartbeatMaintain(self, killEvent: Event) -> None:
+        '''This function continuously sends a heartbeat message'''
         self.__log.trace('Heartbeat broadcast started')
         while not killEvent.wait(timeout=1):
             self.__heartbeatSend()
         self.__log.trace('Heartbeat broadcast stopped')
 
     def __manualControlMaintain(self, killEvent: Event) -> None:
+        '''This function continuously sends the manual_control message'''
         self.__log.trace('Manual Control broadcast started')
         while not killEvent.wait(timeout=(float(self.config['messages']['controlRate']))):
             self.__manualControlSend()
@@ -361,27 +361,10 @@ class mavlinkInterface(object):
         '''
         This function logs data to a file when the logging is set to log at an interval.
         '''
-        readMessages = ['SYS_STATUS',
-                        'RAW_IMU',
-                        'SCALED_PRESSURE',
-                        'SCALED_PRESSURE2',
-                        'HEARTBEAT',
-                        'ATTITUDE',
-                        'STATUSTEXT']
-        if self.gpsEnabled:
-            readMessages.append('GPS_RAW_INT')              # Basic GPS
-            readMessages.append('GLOBAL_POSITION_INT')      # Advanced GPS
-            readMessages.append('MISSION_REQUEST')          # For missions
-            readMessages.append('MISSION_ACK')              # For missions
-            readMessages.append('MISSION_ITEM')             # For missions
-            readMessages.append('MISSION_ITEM_REACHED')     # For missions
-            readMessages.append('MISSION_CURRENT')          # For missions
-            readMessages.append('EKF_STATUS_REPORT')        # For GPS and missions
 
         filePath = abspath(expanduser("~/logs/mavlinkInterface/"))
-
         files = {}
-        for m in readMessages:
+        for m in self.readMessages:
             if m in self.recordedMessages:
                 files[m] = open(filePath + '/' + m + '.log', 'a+')
         i = 0
@@ -465,6 +448,35 @@ class mavlinkInterface(object):
         else:
             self.__log.warn('the custom script action is not yet implemented, surfacing instead')
             self.surface(execMode='override')
+
+    def disableSensor(self, sensor: str, enable: bool = False) -> None:
+        validSensors = ['pressure', 'gps', 'sonar']
+        if sensor not in validSensors:
+            self.__log.error('Invalid option.  Valid options are: ' + str(validSensors))
+            return
+        if sensor == 'pressure':
+            if self.externalPressureMessage in self.readMessages:
+                if enable:
+                    self.readMessages.append(self.externalPressureMessage)
+                else:
+                    self.readMessages.remove(self.externalPressureMessage)
+        elif sensor == 'gps':
+            if 'GPS_RAW_INT' in self.readMessages:
+                if enable:
+                    self.readMessages.append('GPS_RAW_INT')
+                else:
+                    self.readMessages.remove('GPS_RAW_INT')
+            if 'GLOBAL_POSITION_INT' in self.readMessages:
+                if enable:
+                    self.readMessages.append('GLOBAL_POSITION_INT')
+                else:
+                    self.readMessages.remove('GLOBAL_POSITION_INT')
+        elif sensor == 'sonar':
+            if int(self.config['hardware']['sonarcount']) > 0:
+                if enable:
+                    self.sonar.disabled = False
+                else:
+                    self.sonar.disabled = True
 
     # Active commands
     def arm(self, execMode: str = None) -> None:
