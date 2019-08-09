@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import mavlinkinterface
-MLI = mavlinkinterface.mavlinkInterface()
+MLI = mavlinkinterface.mavlinkInterface(execMode='synchronous')
 MLI.arm()
 
 MLI.move(0, 3)
@@ -18,4 +18,4 @@ for i in range(5):
 
 MLI.surface()
 
-input()
+input()     # Keep window open until pressing return

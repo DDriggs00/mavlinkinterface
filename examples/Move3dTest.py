@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import mavlinkinterface
-MLI = mavlinkinterface.mavlinkInterface()
+MLI = mavlinkinterface.mavlinkInterface(execMode='synchronous')
 MLI.arm()
 
 # Move away from the dock
