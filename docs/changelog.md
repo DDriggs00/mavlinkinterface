@@ -6,12 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- ability to change leak response actions
+- Ability to change leak response actions
 - Ability to altar recording interval
+- Ability to disable certain sensors (in order to simulate failure)
+- More effective message logging
 
 ### Changed
 
 - Small modifications to setup.py
+- Fixed bug in Yaw function that was introduced in v1.1.0
 
 ## Current Release: [1.1.0]
 
