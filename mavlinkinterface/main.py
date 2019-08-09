@@ -365,16 +365,16 @@ class mavlinkInterface(object):
         filePath = abspath(expanduser("~/logs/mavlinkInterface/"))
         files = {}
         for m in self.readMessages:
-            if m in self.recordedMessages:
-                files[m] = open(filePath + '/' + m + '.log', 'a+')
+            files[m] = open(filePath + '/' + m + '.log', 'a+')
         i = 0
 
         while not killEvent.wait(.5):
 
             for message in self.recordedMessages:
-                if self.recordedMessages[message] > 0 and i % self.recordedMessages[message] == 0:
+                if self.recordedMessages[message] > 0 and (i % (2 * self.recordedMessages[message])) == 0:
                     if message in self.messages:
-                        files[message].write(str(datetime.now()) + ', ' + str(self.recordedMessages[message]) + '\n')
+                        files[message].write(str(datetime.now()) + ', ' + str(self.messages[message]['message']) + '\n')
+                        files[message].flush()
 
             if i == 120:
                 i = 0
@@ -989,7 +989,7 @@ class mavlinkInterface(object):
             message = [message]
 
         for msg in message:
-            self.__log.info("setting " + message + ' recording interval to ' + str(interval))
+            self.__log.info("setting " + msg + ' recording interval to ' + str(interval))
 
             if interval < 0:
                 # Disable recording for message
