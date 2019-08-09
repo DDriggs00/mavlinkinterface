@@ -38,6 +38,16 @@ These functions modify configuration values, which persist on the device between
 - [setSurfacePressure( pressure \<optional> )](configuration/setSurfacePressure.md)
 - [setFluidDensity( density \<optional> )](configuration/setFluidDensity.md)
 
+### Utility
+
+These functions do not fit into any of the other categories.
+
+- [disableSensor( sensor, enable \<optional>)](utility/disableSensor.md)
+- [log( message )](utility/log.md)
+- [stopCurrentTask()](utility/stopCurrentTask.md)
+- [stopAllTasks()](utility/stopAllTasks.md)
+- [waitQueue()](utility/waitQueue.md)
+
 ## Mission Mode
 
 Advanced functions relying on GPS fall under mission mode.  
