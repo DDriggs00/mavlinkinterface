@@ -70,3 +70,7 @@ Note: This argument is only relevant where a direction, depth, or coordinates ar
 ## ChangeLog
 
 Changelog is available [here](docs/changelog.md).
+
+## Contributing
+
+Contribution instructions available [here](docs/contribute.md)
