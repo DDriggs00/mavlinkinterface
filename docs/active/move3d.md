@@ -1,6 +1,6 @@
 # move3d( throttleX, throttleY, throttleZ, time, execMode \<optional> )
 
-Move the drone in a given direction and power level for *time* seconds
+This function moves the drone in 3 dimensions in a given direction for a specified period of time.
 
 ## Parameters
 

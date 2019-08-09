@@ -1,6 +1,6 @@
 # cameraTilt( angle, speed \<optional>, absolute \<optional>, execMode \<optional> )
 
-Tilts the camera by the angle specified. Range is +/- 90 degrees.
+This function tilts the camera by the angle specified. Range is +/- 90 degrees.
 
 ## Parameters
 

@@ -1,7 +1,6 @@
 # yaw( degrees, absolute \<optional>, execMode \<optional> )
 
-Relative: yaws the drone in place by *degrees*  degrees  
-Absolute: yaws the drone to face in the direction *degrees* degrees
+This command rotates the drone to face a certain direction.
 
 Note: This command will not rotate the drone by more than 180 degrees in either direction.  
 See examples below for how this is implemented.

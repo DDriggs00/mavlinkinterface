@@ -34,9 +34,11 @@ class mavlinkInterface(object):
         :param execMode: The Execution mode to use when not given as a parameter.
                          See docs/configuration/setDefaultexecMode for details.\n
         '''
+
+        execMode = execMode.lower()
         if execMode not in ['synchronous', 'queue', 'ignore', 'override']:
             raise ValueError('The execMode parameter must be one of the following:\n'
-                             + ' synchronous, queue, ignore, override')
+                             + 'synchronous, queue, ignore, override')
 
         # Initialize logger
         self.__log = getLogger('Main', doPrint=True)
@@ -74,11 +76,12 @@ class mavlinkInterface(object):
         self.__log.trace('Setting class variables')
         self.execMode = execMode
         self.externalPressureMessage = 'SCALED_PRESSURE2'
+
+        self.leakResponseAction = 'surface'
         # Leak response action valid options:
         # "nothing": warns the user and takes note in the log, but takes no other action
         # "surface": raises the drone to the surface, overriding any existing commands
-        # <absolute path to .py file, in specified format>
-        self.leakResponseAction = 'surface'
+        # <absolute path to .py file, in specified format> (NYI)
 
         # Handle SITL Mode
         self.sitl = sitl
@@ -271,6 +274,10 @@ class mavlinkInterface(object):
                 self.messages[str(msg.get_type())] = {'message': msg, 'time': datetime.now()}
                 if msg.get_type() in self.recordedMessages and self.recordedMessages[msg.get_type()] == 0:
                     files[msg.get_type()].write(str(datetime.now()) + ', ' + str(msg.to_dict()) + '\n')
+
+        # when done, ensure that the buffer is written to the files
+        for file in files:
+            file.flush()
 
     def __leakDetector(self, killEvent: Event) -> None:
         '''This function continuously checks for leaks, and upon detecting a leak, runs the desired action'''

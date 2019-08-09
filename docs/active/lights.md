@@ -1,6 +1,6 @@
 # setLights( brightness, execMode \<optional> )
 
-Sets the lights to a specific brightness
+This function sets brightness of the lights.
 
 ## Parameters
 

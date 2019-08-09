@@ -1,6 +1,7 @@
 # dive( depth, throttle \<optional>, absolute \<optional>, execMode \<optional> )
 
-This call is used to change the depth of the drone.
+This function can be used to change the depth of the drone, either descending or ascending by a certain depth, or moving to a specific depth.  
+This function depends on the [getPressureExternal()](../passive/getPressureExternal.md) command.
 
 ## Parameters
 

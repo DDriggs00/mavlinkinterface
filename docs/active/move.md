@@ -1,6 +1,6 @@
 # move( direction, time, throttle \<optional>, absolute \<optional>, execMode \<optional> )
 
-Move the drone *direction* at *throttle* percent power for *time* seconds
+This function moves the drone across the X/Y plane in a specified direction for a specified time.
 
 ## Parameters
 

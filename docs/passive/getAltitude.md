@@ -1,6 +1,7 @@
 # getAltitude()
 
 Calculates the altitude based on the sonar sensor data.  
+
 Note: Not reliable at short or long range. see official sensor documentation [here](https://bluerobotics.com/store/sensors-sonars-cameras/sonar/ping-sonar-r2-rp/#tab-technical-details)
 
 ## Return values

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import mavlinkinterface
-MLI = mavlinkinterface.mavlinkInterface(execMode='synchronous')
+MLI = mavlinkinterface.mavlinkInterface(execMode='synchronous', sitl=True)
 MLI.arm()
 
 # MLI.move(0, 3, 100)

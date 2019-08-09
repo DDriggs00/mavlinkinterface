@@ -1,6 +1,8 @@
 # setFluidDensity( density )
 
-Sets the fluid density (used in depth calculations) to the given value.
+This function sets the fluid density (used in depth calculations) to the given value.
+
+Note: changes made by this command persist between dives.
 
 ## Parameters
 

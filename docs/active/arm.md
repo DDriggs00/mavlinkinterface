@@ -1,6 +1,6 @@
 # arm( execMode \<optional> )
 
-Enables the propellers.
+This function enables the thrusters, allowing movement commands to work.
 
 ## Parameters
 

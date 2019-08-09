@@ -1,6 +1,6 @@
 # disarm(execMode \<optional>)
 
-Disables the propellers
+This function disables the propellers. When the drone is disarmed, movement commands will be sent, but do nothing.
 
 ## Parameters
 

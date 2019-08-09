@@ -1,7 +1,7 @@
 # setDefaultExecMode( mode )
 
-Sets the queuing mode to use when the common parameter execMode is not given.  
-This will only work if the queue is empty, and no commands are currently executing
+This function sets the execution mode to use when the common parameter `execMode` is not given.  
+This will only work if the queue is empty, and no commands are currently executing.  
 The possible modes are as follows:
 
 Synchronous mode:

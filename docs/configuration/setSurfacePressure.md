@@ -1,6 +1,8 @@
 # setSurfacePressure( pressure \<optional> )
 
-Sets the surface pressure (used in depth calculations) to the given value.
+This function sets the surface pressure (used in depth calculations) to the given value.
+
+Note: changes made by this command persist between dives.
 
 ## Parameters
 

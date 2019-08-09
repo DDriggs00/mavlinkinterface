@@ -1,6 +1,6 @@
 # setFlightMode( flightMode, execMode \<optional> )
 
-Sets the drone's flight mode to the given value.
+This function sets the drone's flight mode to the given value. Valid flight modes are listed below.
 
 ## Flight Modes
 

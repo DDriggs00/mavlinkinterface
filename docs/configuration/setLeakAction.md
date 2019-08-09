@@ -43,7 +43,7 @@ def customLeakAction(mli) -> None:
     try:
         if mli.gpsEnabled:
             c = mli.gps.getCoordinates()
-        log.trace('surfaced at ' + c)
+        log.warn('surfaced at ' + c + ' upon detecting leak')
     except ConnectionError:
         log.error('Failed to get GPS')
 

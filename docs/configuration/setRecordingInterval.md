@@ -1,18 +1,18 @@
-# setRecordingInterval( sensor, interval )
+# setRecordingInterval( message, interval )
 
-Set how long to wait between recording data on the given sensor to a file.  
-NOTE: the sensors only send messages at a rate of 4 hz, so any logging more frequent than that would be wasted
+This function enables, disables, or alters the interval at which data is recorded to a file.
 
 ## Parameters
 
-sensor (string, list):
-> The sensor to log.  
-> If this is a list, the command applies to all listed sensors.  
+message (string, list):
+> The exact name of hte mavlink message to record.  
+> If this is a list, the command applies to all listed messages.  
 
 interval (float):
 > The number of seconds to wait between data records  
-> Set to 0 to log every message
-> Set to -1 to disable logging
+> This has a resolution of 0.5 sec.  
+> Set to 0 to log every message.  
+> Set to -1 to disable logging.
 
 ## Return Values
 

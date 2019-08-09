@@ -1,12 +1,13 @@
 # gripperClose( time, execMode \<optional> )
 
-Power the gripper arm closed for *time* seconds
+Power the gripper arm closed for *time* seconds.  
+Closing the gripper from a fully open position is 1.75 sec
 
 ## Parameters
 
 time (float):  
 > The number of seconds to send the "close" signal to the gripper arm
-> This has a resolution of 1/4 sec.  
+> This has a resolution of 0.25 sec.  
 > Closing the gripper from a fully open position is 1.75 sec
 
 execMode (string, optional):

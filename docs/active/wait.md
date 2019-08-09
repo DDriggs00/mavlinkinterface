@@ -1,7 +1,6 @@
 # DEPRECATED: wait( time, execMode \<optional> )
 
-This call gives an empty manual control message to the drone to prevent the interruption of the manual control heartbeat.  
-This is required if a rest is needed while no manual control is being sent.
+This function is functionally identical to sleep(), except it is able to be used with queue modes
 
 ## Parameters
 

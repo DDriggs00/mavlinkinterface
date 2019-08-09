@@ -1,6 +1,6 @@
 # surface( execMode \<optional> )
 
-This call brings the drone to the surface.
+This function brings the drone to the surface at full throttle.
 
 ## Parameters
 
