@@ -47,3 +47,4 @@ Because most attached sensors behave in different ways, most of this will be uni
 
 - If the sensor has its own python interface, consider creating a class for it (like how Sonar is implemented).
 - All returned sensor data must be converted to the SI unit that makes the most sense
+  - Exception: degrees are used for all angles, rather than the SI Unit of Radians
