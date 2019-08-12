@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming Release: [1.2.0]
+## Current Release: [1.2.0]
 
 ### Added
 
@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 - Small modifications to setup.py
 - Fixed bug in Yaw function that was introduced in v1.1.0
 
-## Current Release: [1.1.0]
+## [1.1.0]
 
 ### Added
 
