@@ -1,11 +1,12 @@
 # getGyroscopeData()
 
-Reads the gyroscope and returns the output in units of degrees per second
+This function reads the IMU gyroscope and returns the output in units of degrees per second
 
 ## Return Values
 
 Returns a JSON-formatted string.  
-The output will be the data taken directly from the gyroscope.
+The output will be the data taken directly from the gyroscope.  
+Output is in units fo degrees per second (°/s)
 
 ## Example output
 

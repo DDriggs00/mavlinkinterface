@@ -1,11 +1,11 @@
 # getDepth()
 
-Calculates the depth based on the external pressure sensor data
+This function calculates the depth based on the external pressure sensor data.
 
 ## Return values
 
 Returns a float
-Returns the depth of the drone in meters down from the surface
+Returns the depth of the drone as distance from the surface in meters
 
 ## Examples
 

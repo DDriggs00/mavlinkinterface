@@ -1,21 +1,20 @@
 # cameraVideoStop()
 
-Ends the current video if recording is active
+This function stops and finalizes any recording videos.
 
 ## Return Values
 
-Returns a string.  
-Upon Success, Returns "Success"  
-Upon Failure, returns failure reason
+Returns void.  
+Upon Failure, throws a FileError
 
 ## Examples
 
 ```py
 MLI.cameraVideoStop() # Assuming video is recording
-# The currently recording video ends and the video file is finalized, and returns "Success"
+# The currently recording video ends and the video file is finalized.
 
 MLI.cameraVideoStop() # Assuming video is not recording
-# The currently recording video ends and the video file is finalized, and function returns "Failed, No video to stop"
+# The currently recording video ends and the video file is finalized, and function throws a fileError
 ```
 
 ## Related Mavlink Commands

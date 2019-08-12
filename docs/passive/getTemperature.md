@@ -1,15 +1,11 @@
 # GetTemperature()
 
-reads the data from the external temperature sensor
+reads the data from the external temperature sensor (by default, the external pressure sensor)
 
 ## Return Values
 
 Returns a float.  
-Returns the temperature read by the temperature sensor in degrees Celsius
-
-### Example output
-
-`26.3`
+Returns the temperature in degrees Celsius
 
 ## Examples
 

@@ -1,6 +1,6 @@
 # cameraVideoStart( time \<optional>, resolution \<optional> )
 
-Starts the camera recording video. The video will end when either the cameraVideoStop is called, the optional timer ends, or the internal storage runs out.
+This function starts the camera recording video. The video will end when either the cameraVideoStop is called, the optional timer ends, or the drone runs out of storage.
 
 ## Parameters
 
@@ -11,13 +11,15 @@ resolution (string, optional):
 > Used to reduce the resolution the camera is recording at.  
 > Default is 1080p (camera max)
 
+Additional video parameters may be added at a future time.
+
 ## Return Values
 
 Returns a JSON-formatted string string.  
 Upon success, returns the local path of the video.  
 Upon failure, returns the reason for failure.
 
-## Examples
+## Examples (with output)
 
 ```py
 MLI.cameraVideoStart()

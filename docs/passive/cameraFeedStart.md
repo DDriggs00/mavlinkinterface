@@ -1,6 +1,6 @@
 # cameraFeedStart()
 
-Creates a camera feed that the remote computer can access, assuming connectivity.
+This command creates and begins streaming a live video stream, returning all data needed to access the stream.
 
 ## Return Values
 
@@ -8,12 +8,14 @@ Returns a JSON-formatted string.
 Upon Success, returns all information necessary to access the video stream.  
 Upon failure, returns the reason for failure.
 
-## Examples
+## Example
 
 ```py
 MLI.cameraFeedStart()
 # The camera feed is enabled and the following JSON returned
 ```
+
+## Example Output
 
 ```json
 {

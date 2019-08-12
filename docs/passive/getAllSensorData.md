@@ -1,11 +1,12 @@
 # getAllSensorData()
 
-Returns data from all sensors
+This function gets all data from all sensors, and returns in as a JSON.
 
 ## Return Values
 
 Returns a JSON-formatted string.  
-Returns all data from every currently-attached sensor
+Returns all data from every currently-attached sensor.  
+For individual sensor formatting, see each sensor's command's documentation
 
 ## Example Output
 

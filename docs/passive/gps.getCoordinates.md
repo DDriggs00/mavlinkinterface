@@ -1,13 +1,14 @@
 # GetTemperature()
 
-Gets the coordinates from the GPS unit  
+This function gets the coordinates from the GPS unit.  
 Coordinates will only be returned if a GPS Lock is present.
 
 ## Return Values
 
 Returns a string.  
 If a gps lock is present, returns the current coordinates (lat/lon only)  
-If no lock was present, throws a ConnectionError
+If no lock was present, throws a ConnectionError.  
+If any other error occurs, throws a relevant exception.
 
 ### example output (expanded)
 

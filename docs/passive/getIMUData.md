@@ -1,11 +1,12 @@
 # getIMUData()
 
-Combines the outputs of getAccelerometerData(), getGyroscopeData(), and getMagnetometerData().
+This function returns all data provided by the IMU. It is equivalent to combining the outputs of [getAccelerometerData()](getAccelerometerData.md), [getGyroscopeData()](getGyroscopeData.md), and [getMagnetometerData()](getMagnetometerData.md).
 
 ## Return Values
 
 Returns a JSON-formatted string.  
-Returns Accelerometer, Gyroscope, and Magnetometer data.
+Returns Accelerometer, Gyroscope, and Magnetometer data.  
+For more details, see individual sensor documentation.
 
 ## Example output
 

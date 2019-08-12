@@ -1,11 +1,11 @@
 # getPressureExternal()
 
-Reads the data from the external pressure sensor
+This function reads the data from the external pressure sensor.
 
 ## Return values
 
 Returns a float.  
-Returns the external pressure on the drone in Pascals
+Returns the external pressure on the drone in Pascals.
 
 ## Examples
 

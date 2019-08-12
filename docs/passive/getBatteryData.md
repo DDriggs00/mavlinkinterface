@@ -1,6 +1,6 @@
 # GetBatteryData()
 
-Reads battery statistics and calculates battery percentage
+This function reads battery statistics and calculates battery percentage.
 
 ## Return Values
 

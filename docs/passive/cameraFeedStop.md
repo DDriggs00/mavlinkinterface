@@ -1,12 +1,11 @@
 # cameraFeedStop()
 
-Stops the existing camera feed
+This command stops any ongoing video feeds.
 
 ## Return Values
 
-Returns a string.  
-Upon Success, returns "Success"  
-Upon failure, returns the reason for failure.
+Returns void.  
+Upon failure, throws an exception.
 
 ## Examples
 

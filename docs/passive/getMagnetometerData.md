@@ -1,11 +1,12 @@
 # getMagnetometerData()
 
-Reads the magnetometer and returns the output in units of gauss
+This function reads the IMU magnetometer and returns the output in units of gauss.
 
 ## Return Values
 
 Returns a JSON-formatted string.  
-The output will data taken directly from the magnetometer.
+The output will data taken directly from the magnetometer.  
+Output is in units of Gauss
 
 ## Example output
 

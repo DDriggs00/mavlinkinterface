@@ -1,6 +1,6 @@
 # getPressureInternal()
 
-Reads the data from the internal pressure sensor
+This function reads the data from the internal pressure sensor.
 
 ## Return values
 

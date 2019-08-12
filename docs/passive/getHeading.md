@@ -1,11 +1,11 @@
 # getHeading()
 
-uses the magnetometer to calculate the facing direction of the drone
+This function uses the IMU magnetometer to calculate the direction the drone is facing.
 
 ## Return Values
 
 Returns a float.  
-returns the heading of the drone in degrees.
+Returns the heading of the drone in degrees (as the smallest possible positive value).
 
 ## Examples
 

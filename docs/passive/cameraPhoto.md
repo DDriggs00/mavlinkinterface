@@ -1,6 +1,6 @@
 # cameraPhoto( resolution \<optional>, zoom \<optional>, )
 
-Takes a photo using the camera and returns its path.
+This function takes a photo using the camera and returns its path.
 
 ## Parameters
 
@@ -8,13 +8,19 @@ resolution (string, optional):
 > Used to reduce the resolution the camera is recording at.  
 > Default is 1080p (camera max)
 
+zoom (string, optional):  
+> Used to set the digital zoom of the camera.  
+> Default is 1x
+
+Additional camera settings may be added at a future time
+
 ## Return Values
 
 Returns a JSON-formatted string string.  
 Upon success, returns the local path of the image.  
 Upon failure, returns the reason for failure.
 
-## Examples
+## Examples (with output)
 
 ```py
 MLI.cameraPhoto()
