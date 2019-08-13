@@ -5,8 +5,7 @@ This function is functionally identical to sleep(), except it is able to be used
 ## Parameters
 
 time (float):
-> The amount of time to wait.  
-> The time parameter has a resolution of .25 seconds.
+> The amount of time to wait.
 
 execMode (string, optional):
 > The execution mode to use for this command. Possible execution modes are:
@@ -26,29 +25,8 @@ Returns void.
 ## Example
 
 ```py
-# This is an example which requires a wait (a sleep function will not work properly).
-for i in range(3)
-    MLI.dive(depth=-1, execMode='queue')
-    MLI.wait(3, execMode='synchronous')
-    # Collect data
-```
-
-```py
-# This is an example which requires a wait (a sleep function will not work properly).
+# This is an example for which a wait is useful.
 for i in range(3)
     MLI.dive(depth=-1, execMode='queue')
     MLI.wait(3, execMode='queue')
-
-# collect data
 ```
-
-```py
-# This is an example which does not require the wait function
-mli.move(direction=0, time=10, execMode='queue')
-sleep(7)    # because the movement function is still executing in the background, this is a sleep
-# Do something
-```
-
-## Related Mavlink Messages
-
-- MANUAL_CONTROL

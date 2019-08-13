@@ -1,4 +1,4 @@
-# GetTemperature()
+# gps.getCoordinates()
 
 This function gets the coordinates from the GPS unit.  
 Coordinates will only be returned if a GPS Lock is present.
